@@ -1,0 +1,53 @@
+<?php
+
+/**
+ * @version     1.0.0
+ * @package     com_campaign
+ * @copyright   Copyright (C) 2015. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
+ * @author      Nguyen Thanh Trung <nttrung211@yahoo.com> - 
+ */
+// No direct access
+defined('_JEXEC') or die;
+
+class CampaignController extends JControllerLegacy {
+
+    /**
+     * Method to display a view.
+     *
+     * @param	boolean			$cachable	If true, the view output will be cached
+     * @param	array			$urlparams	An array of safe url parameters and their variable types, for valid values see {@link JFilterInput::clean()}.
+     *
+     * @return	JController		This object to support chaining.
+     * @since	1.5
+     */
+    public function display($cachable = false, $urlparams = false) {
+        require_once JPATH_COMPONENT . '/helpers/campaign.php';
+
+        $view = JFactory::getApplication()->input->getCmd('view', 'campaigns');
+        JFactory::getApplication()->input->set('view', $view);
+
+        parent::display($cachable, $urlparams);
+
+        return $this;
+    }
+	
+	public function publish(){
+		$cid = JRequest::getVar("cid");
+		$this->setPublish($cid[0], 1);
+		$this->setRedirect("index.php?option=com_campaign&view=campaigns", "Campaign is published");
+	}
+	
+	public function unpublish(){
+		$cid = JRequest::getVar("cid");
+		$this->setPublish($cid[0], 0);
+		$this->setRedirect("index.php?option=com_campaign&view=campaigns", "Campaign is unpublished");
+	}
+	
+	public function setPublish($id, $status){
+		$db = JFactory::getDBO();
+		$db->setQuery("UPDATE #__campaign SET published = $status WhERE id = $id");
+		return $db->query();
+	}
+
+}

@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form>
+	<fieldset>
+
+              <field name="id" type="text" default="0" label="COM_CAMPAIGN_FORM_LBL_CAMPAIGN_ID"
+            readonly="true" class="readonly"
+            description="JGLOBAL_FIELD_ID_DESC" /> 
+
+       <field name="name" type="text" size="40" class="inputbox"
+                                                    
+            label="COM_CAMPAIGN_FORM_LBL_CAMPAIGN_NAME"
+            description="COM_CAMPAIGN_FORM_DESC_CAMPAIGN_NAME" 
+                                                    
+                                                    
+                                                     required="true" 
+                                                    filter="safehtml" /> 
+
+       <field name="created_time" type="timecreated" default="" 
+            label="COM_CAMPAIGN_FORM_LBL_CAMPAIGN_CREATED_TIME"
+            description="COM_CAMPAIGN_FORM_DESC_CAMPAIGN_CREATED_TIME"  hidden="true" /> 
+
+       <field name="end_date" type="calendar"
+                
+            label="COM_CAMPAIGN_FORM_LBL_CAMPAIGN_END_DATE"
+            description="COM_CAMPAIGN_FORM_DESC_CAMPAIGN_END_DATE" 
+                
+                
+                 required="true"  /> 
+
+       <field name="end_hour" type="list"
+                
+            label="COM_CAMPAIGN_FORM_LBL_CAMPAIGN_END_HOUR"
+            description="COM_CAMPAIGN_FORM_DESC_CAMPAIGN_END_HOUR" 
+                 default="0" 
+                
+                
+            menu_published="0"
+            filter="raw"
+            directory_stripext="true"
+            directory_hidenode="true"
+            directory_hidedefault="true"
+            alias_generator="2074705"
+            heading="h4"
+            close="true"
+            option_on="Yes"
+            option_off="Yes">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+                <option value="13">13</option>
+                <option value="14">14</option>
+                <option value="15">15</option>
+                <option value="16">16</option>
+                <option value="17">17</option>
+                <option value="18">18</option>
+                <option value="19">19</option>
+                <option value="20">20</option>
+                <option value="21">21</option>
+                <option value="22">22</option>
+                <option value="23">23</option>
+        </field> 
+
+       <field name="end_minute" type="list"
+                
+            label="COM_CAMPAIGN_FORM_LBL_CAMPAIGN_END_MINUTE"
+            description="COM_CAMPAIGN_FORM_DESC_CAMPAIGN_END_MINUTE" 
+                 default="0" 
+                
+                
+            menu_published="0"
+            filter="raw"
+            directory_stripext="true"
+            directory_hidenode="true"
+            directory_hidedefault="true"
+            alias_generator="2074705"
+            heading="h4"
+            close="true"
+            option_on="Yes"
+            option_off="Yes">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+                <option value="25">25</option>
+                <option value="30">30</option>
+                <option value="35">35</option>
+                <option value="40">40</option>
+                <option value="45">45</option>
+                <option value="50">50</option>
+                <option value="55">55</option>
+        </field> 
+
+       <field name="gender" type="list"
+                
+            label="COM_CAMPAIGN_FORM_LBL_CAMPAIGN_GENDER"
+            description="COM_CAMPAIGN_FORM_DESC_CAMPAIGN_GENDER" 
+                 default="1" 
+                
+                
+            menu_published="0"
+            filter="raw"
+            directory_stripext="true"
+            directory_hidenode="true"
+            directory_hidedefault="true"
+            alias_generator="2074705"
+            heading="h4"
+            close="true"
+            option_on="Yes"
+            option_off="Yes">
+                <option value="1">Both</option>
+                <option value="2">Female</option>
+                <option value="3">Male</option>
+        </field> 
+
+       <field name="from_age" type="text" size="40" class="inputbox"
+                                                    
+            label="COM_CAMPAIGN_FORM_LBL_CAMPAIGN_FROM_AGE"
+            description="COM_CAMPAIGN_FORM_DESC_CAMPAIGN_FROM_AGE" 
+                                                    
+                                                    
+                                                    
+                                                    filter="safehtml" /> 
+
+       <field name="to_age" type="text" size="40" class="inputbox"
+                                                    
+            label="COM_CAMPAIGN_FORM_LBL_CAMPAIGN_TO_AGE"
+            description="COM_CAMPAIGN_FORM_DESC_CAMPAIGN_TO_AGE" 
+                                                    
+                                                    
+                                                    
+                                                    filter="safehtml" /> 
+
+       <field name="from_zipcode" type="text" size="40" class="inputbox"
+                                                    
+            label="COM_CAMPAIGN_FORM_LBL_CAMPAIGN_FROM_ZIPCODE"
+            description="COM_CAMPAIGN_FORM_DESC_CAMPAIGN_FROM_ZIPCODE" 
+                                                    
+                                                    
+                                                    
+                                                    filter="safehtml" /> 
+
+       <field name="to_zipcode" type="text" size="40" class="inputbox"
+                                                    
+            label="COM_CAMPAIGN_FORM_LBL_CAMPAIGN_TO_ZIPCODE"
+            description="COM_CAMPAIGN_FORM_DESC_CAMPAIGN_TO_ZIPCODE" 
+                                                    
+                                                    
+                                                    
+                                                    filter="safehtml" /> 
+
+       <field name="image" type="media"
+                
+            label="COM_CAMPAIGN_FORM_LBL_CAMPAIGN_IMAGE"
+            description="COM_CAMPAIGN_FORM_DESC_CAMPAIGN_IMAGE" 
+                
+                
+                
+            directory="Campain" /> 
+
+       <field name="video" type="text" size="40" class="inputbox"
+                                                    
+            label="COM_CAMPAIGN_FORM_LBL_CAMPAIGN_VIDEO"
+            description="COM_CAMPAIGN_FORM_DESC_CAMPAIGN_VIDEO" 
+                                                    
+                                                    
+                                                    
+                                                    filter="safehtml" /> 
+
+       <field name="minimum_seconds" type="text" size="40" class="inputbox"
+                                                    
+            label="COM_CAMPAIGN_FORM_LBL_CAMPAIGN_MINIMUM_SECONDS"
+            description="COM_CAMPAIGN_FORM_DESC_CAMPAIGN_MINIMUM_SECONDS" 
+                                                    
+                                                    
+                                                    
+                                                    filter="safehtml" /> 
+
+       <field name="reward" type="text" size="40" class="inputbox"
+                                                    
+            label="COM_CAMPAIGN_FORM_LBL_CAMPAIGN_REWARD"
+            description="COM_CAMPAIGN_FORM_DESC_CAMPAIGN_REWARD" 
+                                                    
+                                                    
+                                                    
+                                                    filter="safehtml" /> 
+
+       <field name="number_of_winners" type="text" size="40" class="inputbox"
+                                                    
+            label="COM_CAMPAIGN_FORM_LBL_CAMPAIGN_NUMBER_OF_WINNERS"
+            description="COM_CAMPAIGN_FORM_DESC_CAMPAIGN_NUMBER_OF_WINNERS" 
+                                                    
+                                                    
+                                                    
+                                                    filter="safehtml" /> 
+
+       <field name="instruction" type="editor"
+                
+            label="COM_CAMPAIGN_FORM_LBL_CAMPAIGN_INSTRUCTION"
+            description="COM_CAMPAIGN_FORM_DESC_CAMPAIGN_INSTRUCTION" 
+                
+                
+                 /> 
+
+       <field name="active" type="radio" buttons="true"
+                                                class="btn - group btn - group - yesno" default="1"
+        
+        
+            label="COM_CAMPAIGN_FORM_LBL_CAMPAIGN_ACTIVE"
+            description="COM_CAMPAIGN_FORM_DESC_CAMPAIGN_ACTIVE" ><option value="1">COM_CAMPAIGN_CAMPAIGNS_ACTIVE_OPTION_ON</option><option value="0">COM_CAMPAIGN_CAMPAIGNS_ACTIVE_OPTION_OFF</option></field>
+
+	</fieldset>
+
+</form>

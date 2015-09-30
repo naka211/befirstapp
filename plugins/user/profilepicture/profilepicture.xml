@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="1.0" type="plugin" group="user" method="upgrade">
+	<name>PLG_USER_PROFILEPICTURE</name>
+	<author>Mosets Consulting</author>
+	<creationDate>June 2015</creationDate>
+	<copyright>(C) 2012-present Mosets Consulting. All rights reserved.</copyright>
+	<license>GNU General Public License version 2 or later; see LICENSE.txt</license>
+	<authorEmail>mtree@mosets.com</authorEmail>
+	<authorUrl>www.mosets.com</authorUrl>
+	<version>2.0.0</version>
+	<description>PLG_USER_PROFILEPICTURE_XML_DESCRIPTION</description>
+	<languages folder="language">
+		<language tag="en-GB">en-GB/en-GB.plg_user_profilepicture.ini</language>
+		<language tag="en-GB">en-GB/en-GB.plg_user_profilepicture.sys.ini</language>
+	</languages>
+	<files>
+		<folder>profiles</folder>
+		<folder>elements</folder>
+		<filename plugin="profilepicture">profilepicture.php</filename>
+	</files>
+	<media folder="media/plg_user_profilepicture" destination="plg_user_profilepicture">
+		<folder>images</folder>
+	</media>
+    <config>
+        <fields name="params">
+            <fieldset name="basic">
+                <field name="maxUploadSizeInBytes" type="text"
+                       class=""
+                       default="800000"
+                       description="PLG_USER_PROFILEPICTURE_FIELD_MAXUPLOADSIZEINBYTES_DESC"
+                       label="PLG_USER_PROFILEPICTURE_FIELD_MAXUPLOADSIZEINBYTES_LABEL"
+                        />
+            </fieldset>
+        </fields>
+    </config>
+</extension>

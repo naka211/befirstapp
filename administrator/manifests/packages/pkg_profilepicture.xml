@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension type="package" version="2.0.0" method="upgrade">
+	<name>Profile Picture Package</name>
+	<packagename>profilepicture</packagename>
+	<version>2.0.0</version>
+	<author>Mosets Consulting</author>
+	<creationDate>June 2015</creationDate>
+	<url>http://www.mosets.com</url>
+	<packager>Mosets Consulting</packager>
+	<packageurl>http://www.mosets.com</packageurl>
+	<description>Profile Picture Package</description>
+	<update>http://update.mosets.com/packages/profilepicture</update>
+	<files folder=".">
+		<file type="library" id="lib_profilepicture">lib_profilepicture-2.0.0.zip</file>
+		<file type="plugin" id="profilepicture" group="user">plg_user_profilepicture-2.0.0.zip</file>
+	</files>
+</extension>
