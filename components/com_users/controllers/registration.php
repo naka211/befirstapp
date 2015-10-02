@@ -108,7 +108,7 @@ class UsersControllerRegistration extends UsersController
 	public function register()
 	{
 		// Check for request forgeries.
-		JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
+		//JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
 
 		// If registration is disabled - Redirect to login page.
 		if (JComponentHelper::getParams('com_users')->get('allowUserRegistration') == 0)
@@ -123,7 +123,20 @@ class UsersControllerRegistration extends UsersController
 
 		// Get the user data.
 		$requestData = $this->input->post->get('jform', array(), 'array');
-
+print_r(JRequest::getVar( 'jform', null, 'files'));exit;
+		
+		$name = JRequest::getVar("name");
+		$email1 = JRequest::getVar("email");
+		$email2 = JRequest::getVar("email");
+		$username = JRequest::getVar("email");
+		$password1 = JRequest::getVar("password1");
+		$password2 = JRequest::getVar("password2");
+		$gender = JRequest::getVar("gender");
+		$dob = JRequest::getVar("dob");
+		$address = JRequest::getVar("address");
+		$postal_code = JRequest::getVar("postal_code");
+		$city = JRequest::getVar("city");
+		//$picture = $_FILES
 		// Validate the posted data.
 		$form = $model->getForm();
 

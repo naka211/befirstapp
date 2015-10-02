@@ -29,7 +29,7 @@ class ApiControllerApi extends JControllerLegacy {
 			//$db->query();
 			
 			$data = array("result" => 1,
-						"userid" => $user->id,
+						"user_id" => $user->id,
 						"name" => $user->name,
 						"email" => $user->email,
 						"gender" => $userProfile->profile["gender"],
@@ -45,4 +45,19 @@ class ApiControllerApi extends JControllerLegacy {
 		}
         die(json_encode($data));
     }
+	
+	public function logout(){
+		$user_id = JRequest::getVar("user_id");
+		$token = JRequest::getVar("token");
+		
+		$db = JFactory::getDBO();
+		$q = "DELETE FROM #__users_token WHERE user_id = ".(int)$user_id." AND token = '".$token."'";
+		$db->setQuery($q);
+		if($db->query()){
+			$data = array("result" => 1);
+		} else {
+			$data = array("result" => 0);
+		}
+		die(json_encode($data));
+	}
 }
