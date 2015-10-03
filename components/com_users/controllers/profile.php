@@ -89,7 +89,7 @@ class UsersControllerProfile extends UsersController
 	public function save()
 	{
 		// Check for request forgeries.
-		JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
+		//JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
 
 		$app    = JFactory::getApplication();
 		$model  = $this->getModel('Profile', 'UsersModel');
@@ -97,10 +97,46 @@ class UsersControllerProfile extends UsersController
 		$userId = (int) $user->get('id');
 
 		// Get the user data.
-		$data = $app->input->post->get('jform', array(), 'array');
+		//$data = $app->input->post->get('jform', array(), 'array');
 
+		$user_id = JRequest::getVar("user_id");
+		$name = JRequest::getVar("name", "");
+		$email1 = JRequest::getVar("email");
+		$email2 = JRequest::getVar("email");
+		$username = JRequest::getVar("email");
+		$password1 = JRequest::getVar("password1", "");
+		$password2 = JRequest::getVar("password2");
+		$gender = JRequest::getVar("gender");
+		$dob = JRequest::getVar("dob");
+		$address = JRequest::getVar("address", "");
+		$postal_code = JRequest::getVar("postal_code");
+		$city = JRequest::getVar("city", "");
+		$remove_picture = JRequest::getVar("remove_picture", NULL);
+		
+		$data['id'] 		= $user_id;
+		$data['name'] 		= $name;
+		$data['username'] 	= $username;
+		$data['email1'] 	= $email1;
+		$data['email2'] 	= $email2;
+		$data['password1'] 	= $password1;
+		$data['password2'] 	= $password2;
+		$data['profile']['gender'] 		= $gender;
+		$data['profile']['dob'] 			= $dob;
+		$data['profile']['address'] 		= $address;
+		$data['profile']['postal_code'] 	= $postal_code;
+		$data['profile']['city'] 		= $city;
+		$_POST['jform']['profilepicture']['file']['remove'] = $remove_picture;
+		
+		if(isset($_FILES['picture'])){
+			$_FILES['jform']['name']['profilepicture']['file'] = $_FILES['picture']['name'];
+			$_FILES['jform']['type']['profilepicture']['file'] = $_FILES['picture']['type'];
+			$_FILES['jform']['tmp_name']['profilepicture']['file'] = $_FILES['picture']['tmp_name'];
+			$_FILES['jform']['error']['profilepicture']['file'] = $_FILES['picture']['error'];
+			$_FILES['jform']['size']['profilepicture']['file'] = $_FILES['picture']['size'];
+		}
+		
 		// Force the ID to this user.
-		$data['id'] = $userId;
+		//$data['id'] = $userId;
 
 		// Validate the posted data.
 		$form = $model->getForm();
@@ -146,7 +182,15 @@ class UsersControllerProfile extends UsersController
 
 		// Attempt to save the data.
 		$return = $model->save($data);
-
+		//T.Trung
+		if($return == true){
+			$result['result'] = 1;
+			die(json_encode($result));
+		} else {
+			$result['result'] = 0;
+			die(json_encode($result));
+		}
+		//T.Trung end
 		// Check for errors.
 		if ($return === false)
 		{

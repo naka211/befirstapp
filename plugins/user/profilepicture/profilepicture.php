@@ -156,7 +156,8 @@ class plgUserProfilePicture extends JPlugin
 	{
 		$userId	= JArrayHelper::getValue($data, 'id', 0, 'int');
 		$files	= JRequest::getVar( 'jform', null, 'files');
-		$post	= JRequest::getVar( 'jform', null);
+		//$post	= JRequest::getVar( 'jform', null);
+		$post	= $_POST['jform'];
 
 		$savedNewProfilePicture = false;
 

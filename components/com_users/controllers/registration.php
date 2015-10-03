@@ -122,8 +122,7 @@ class UsersControllerRegistration extends UsersController
 		$model = $this->getModel('Registration', 'UsersModel');
 
 		// Get the user data.
-		$requestData = $this->input->post->get('jform', array(), 'array');
-print_r(JRequest::getVar( 'jform', null, 'files'));exit;
+		//$requestData = $this->input->post->get('jform', array(), 'array');
 		
 		$name = JRequest::getVar("name");
 		$email1 = JRequest::getVar("email");
@@ -136,7 +135,26 @@ print_r(JRequest::getVar( 'jform', null, 'files'));exit;
 		$address = JRequest::getVar("address");
 		$postal_code = JRequest::getVar("postal_code");
 		$city = JRequest::getVar("city");
-		//$picture = $_FILES
+		
+		$requestData['name'] 		= $name;
+		$requestData['username'] 	= $username;
+		$requestData['email1'] 		= $email1;
+		$requestData['email2'] 		= $email2;
+		$requestData['password1'] 	= $password1;
+		$requestData['password2'] 	= $password2;
+		$requestData['profile']['gender'] 		= $gender;
+		$requestData['profile']['dob'] 			= $dob;
+		$requestData['profile']['address'] 		= $address;
+		$requestData['profile']['postal_code'] 	= $postal_code;
+		$requestData['profile']['city'] 		= $city;
+		
+		
+		$_FILES['jform']['name']['profilepicture']['file'] = $_FILES['picture']['name'];
+		$_FILES['jform']['type']['profilepicture']['file'] = $_FILES['picture']['type'];
+		$_FILES['jform']['tmp_name']['profilepicture']['file'] = $_FILES['picture']['tmp_name'];
+		$_FILES['jform']['error']['profilepicture']['file'] = $_FILES['picture']['error'];
+		$_FILES['jform']['size']['profilepicture']['file'] = $_FILES['picture']['size'];
+		
 		// Validate the posted data.
 		$form = $model->getForm();
 
@@ -152,6 +170,10 @@ print_r(JRequest::getVar( 'jform', null, 'files'));exit;
 		// Check for validation errors.
 		if ($data === false)
 		{
+			//T.Trung
+			$result['result'] = 0;
+			die(json_encode($result));
+			//T.Trung end
 			// Get the validation messages.
 			$errors = $model->getErrors();
 
@@ -179,7 +201,15 @@ print_r(JRequest::getVar( 'jform', null, 'files'));exit;
 
 		// Attempt to save the data.
 		$return = $model->register($data);
-
+		//T.Trung
+		if($return == true){
+			$result['result'] = 1;
+			die(json_encode($result));
+		} else {
+			$result['result'] = 0;
+			die(json_encode($result));
+		}
+		//T.Trung end
 		// Check for errors.
 		if ($return === false)
 		{
