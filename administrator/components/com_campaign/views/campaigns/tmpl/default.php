@@ -24,7 +24,7 @@ $userId    = $user->get('id');
 $listOrder = $this->state->get('list.ordering');
 $listDirn  = $this->state->get('list.direction');
 $canOrder  = $user->authorise('core.edit.state', 'com_campaign');
-$saveOrder = $listOrder == 'a.ordering';
+$saveOrder = $listOrder == 'a.`ordering`';
 if ($saveOrder)
 {
 	$saveOrderingUrl = 'index.php?option=com_campaign&task=campaigns.saveOrderAjax&tmpl=component';
@@ -146,7 +146,7 @@ if (!empty($this->extra_sidebar))
 				<?php echo JHtml::_('grid.sort',  'COM_CAMPAIGN_CAMPAIGNS_NUMBER_OF_WINNERS', 'a.`number_of_winners`', $listDirn, $listOrder); ?>
 				</th>
 				<th class='left'>
-				<?php echo JHtml::_('grid.sort',  'COM_CAMPAIGN_CAMPAIGNS_ACTIVE', 'a.`active`', $listDirn, $listOrder); ?>
+				<?php echo JHtml::_('grid.sort',  'COM_CAMPAIGN_CAMPAIGNS_PUBLISHED', 'a.`published`', $listDirn, $listOrder); ?>
 				</th>
 
 
@@ -224,11 +224,11 @@ if (!empty($this->extra_sidebar))
 				</td>
 				<td>
 
-					<?php echo $item->created_time; ?>
+					<?php echo JHtml::_('date', $item->created_time, 'd-m-Y H:i:s'); ?>
 				</td>
 				<td>
 
-					<?php echo $item->end_date; ?>
+					<?php echo JHtml::_('date', $item->end_date, 'd-m-Y'); ?>
 				</td>
 				<td>
 

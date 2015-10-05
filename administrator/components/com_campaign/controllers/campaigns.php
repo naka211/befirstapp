@@ -61,22 +61,6 @@ class CampaignControllerCampaigns extends JControllerAdmin
 		JFactory::getApplication()->close();
 	}
     
-    public function publish(){die('dfgdfgdfg');
-		$cid = JRequest::getVar("cid");
-		$this->setPublish($cid[0], 1);
-		$this->setRedirect("index.php?option=com_campaign&view=campaigns", "Hình đã được chọn");
-	}
-	
-	public function unpublish(){die('fsf');
-		$cid = JRequest::getVar("cid");
-		$this->setPublish($cid[0], 0);
-		$this->setRedirect("index.php?option=com_campaign&view=campaigns", "Hình đã được bỏ chọn");
-	}
-	
-	public function setSpecial($id, $status){
-		$db = JFactory::getDBO();
-		$db->setQuery("UPDATE #__campaign SET published = $status WhERE id = $id");
-		return $db->query();
-	}
+    
     
 }

@@ -58,6 +58,10 @@ $document->addStyleSheet('components/com_campaign/assets/css/campaign.css');
 				<div class="control-label"><?php echo $this->form->getLabel('name'); ?></div>
 				<div class="controls"><?php echo $this->form->getInput('name'); ?></div>
 			</div>
+			<div class="control-group">
+				<div class="control-label"><?php echo $this->form->getLabel('campaign_image'); ?></div>
+				<div class="controls"><?php echo $this->form->getInput('campaign_image'); ?></div>
+			</div>
 
 				<?php echo $this->form->getInput('created_time'); ?>			<div class="control-group">
 				<div class="control-label"><?php echo $this->form->getLabel('end_date'); ?></div>
@@ -115,7 +119,7 @@ $document->addStyleSheet('components/com_campaign/assets/css/campaign.css');
 				<div class="control-label"><?php echo $this->form->getLabel('instruction'); ?></div>
 				<div class="controls"><?php echo $this->form->getInput('instruction'); ?></div>
 			</div>
-				<input type="hidden" name="jform[active]" value="<?php echo $this->item->active; ?>" />
+				<input type="hidden" name="jform[published]" value="<?php echo $this->item->published; ?>" />
 
 
                 </fieldset>

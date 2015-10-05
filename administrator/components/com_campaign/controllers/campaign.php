@@ -23,7 +23,4 @@ class CampaignControllerCampaign extends JControllerForm
         parent::__construct();
     }
 
-	function publish(){
-		die('sdfsdf');
-	}
 }

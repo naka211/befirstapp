@@ -28,6 +28,7 @@ class CampaignModelCampaigns extends JModelList {
             $config['filter_fields'] = array(
                                 'id', 'a.`id`',
                 'name', 'a.`name`',
+                'campaign_image', 'a.`campaign_image`',
                 'created_time', 'a.`created_time`',
                 'end_date', 'a.`end_date`',
                 'end_hour', 'a.`end_hour`',
@@ -43,7 +44,7 @@ class CampaignModelCampaigns extends JModelList {
                 'reward', 'a.`reward`',
                 'number_of_winners', 'a.`number_of_winners`',
                 'instruction', 'a.`instruction`',
-                'active', 'a.`active`',
+                'published', 'a.`published`',
 
             );
         }

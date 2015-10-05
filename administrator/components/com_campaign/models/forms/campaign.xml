@@ -15,6 +15,15 @@
                                                      required="true" 
                                                     filter="safehtml" /> 
 
+       <field name="campaign_image" type="media"
+                
+            label="COM_CAMPAIGN_FORM_LBL_CAMPAIGN_CAMPAIGN_IMAGE"
+            description="COM_CAMPAIGN_FORM_DESC_CAMPAIGN_CAMPAIGN_IMAGE" 
+                
+                
+                
+            directory="campaign" /> 
+
        <field name="created_time" type="timecreated" default="" 
             label="COM_CAMPAIGN_FORM_LBL_CAMPAIGN_CREATED_TIME"
             description="COM_CAMPAIGN_FORM_DESC_CAMPAIGN_CREATED_TIME"  hidden="true" /> 
@@ -44,6 +53,7 @@
             close="true"
             option_on="Yes"
             option_off="Yes">
+				<option value="0">0</option>
                 <option value="1">1</option>
                 <option value="2">2</option>
                 <option value="3">3</option>
@@ -86,6 +96,7 @@
             close="true"
             option_on="Yes"
             option_off="Yes">
+				<option value="0">0</option>
                 <option value="5">5</option>
                 <option value="10">10</option>
                 <option value="15">15</option>
@@ -164,7 +175,17 @@
                 
                 
                 
-            directory="Campain" /> 
+            menu_published="0"
+            filter="raw"
+            directory="advertising"
+            directory_stripext="true"
+            directory_hidenode="true"
+            directory_hidedefault="true"
+            alias_generator="2074705"
+            heading="h4"
+            close="true"
+            option_on="Yes"
+            option_off="Yes" /> 
 
        <field name="video" type="text" size="40" class="inputbox"
                                                     
@@ -210,12 +231,12 @@
                 
                  /> 
 
-       <field name="active" type="radio" buttons="true"
+       <field name="published" type="radio" buttons="true"
                                                 class="btn - group btn - group - yesno" default="1"
         
         
-            label="COM_CAMPAIGN_FORM_LBL_CAMPAIGN_ACTIVE"
-            description="COM_CAMPAIGN_FORM_DESC_CAMPAIGN_ACTIVE" ><option value="1">COM_CAMPAIGN_CAMPAIGNS_ACTIVE_OPTION_ON</option><option value="0">COM_CAMPAIGN_CAMPAIGNS_ACTIVE_OPTION_OFF</option></field>
+            label="COM_CAMPAIGN_FORM_LBL_CAMPAIGN_PUBLISHED"
+            description="COM_CAMPAIGN_FORM_DESC_CAMPAIGN_PUBLISHED" ><option value="1">COM_CAMPAIGN_CAMPAIGNS_PUBLISHED_OPTION_ON</option><option value="0">COM_CAMPAIGN_CAMPAIGNS_PUBLISHED_OPTION_OFF</option></field>
 
 	</fieldset>
 

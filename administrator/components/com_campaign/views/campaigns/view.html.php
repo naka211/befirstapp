@@ -121,7 +121,7 @@ class CampaignViewCampaigns extends JViewLegacy {
 		'a.`to_zipcode`' => JText::_('COM_CAMPAIGN_CAMPAIGNS_TO_ZIPCODE'),
 		'a.`reward`' => JText::_('COM_CAMPAIGN_CAMPAIGNS_REWARD'),
 		'a.`number_of_winners`' => JText::_('COM_CAMPAIGN_CAMPAIGNS_NUMBER_OF_WINNERS'),
-		'a.`active`' => JText::_('COM_CAMPAIGN_CAMPAIGNS_ACTIVE'),
+		'a.`published`' => JText::_('COM_CAMPAIGN_CAMPAIGNS_PUBLISHED'),
 		);
 	}
 
