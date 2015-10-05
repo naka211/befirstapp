@@ -227,7 +227,7 @@
                 
             label="COM_CAMPAIGN_FORM_LBL_CAMPAIGN_INSTRUCTION"
             description="COM_CAMPAIGN_FORM_DESC_CAMPAIGN_INSTRUCTION" 
-                
+               filter="raw"
                 
                  /> 
 

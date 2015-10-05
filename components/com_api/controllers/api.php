@@ -5,6 +5,9 @@ jimport('joomla.application.component.controller');
 
 class ApiControllerApi extends JControllerLegacy {
 
+	public function test(){
+		die("API is ok!!!");
+	}
     public function login() {
 		$app    = JFactory::getApplication();
 		$username = JRequest::getVar("username");
@@ -26,7 +29,7 @@ class ApiControllerApi extends JControllerLegacy {
 			$userProfile = JUserHelper::getProfile( $user->id );
 			
 			$db->setQuery("INSERT INTO #__users_token (user_id, token, type) VALUES (".$user->id.", '".$token."', '".$type."')");
-			$db->query();
+			$db->execute();
 			
 			$data = array("result" => 1,
 						"user_id" => $user->id,
@@ -120,6 +123,8 @@ class ApiControllerApi extends JControllerLegacy {
 		$dob = JRequest::getVar("dob", "");
 		$tmp = explode("-", $dob);
 		$dob = $tmp[2]."-".$tmp[1]."-".$tmp[0]." 00:00:00";
+		$token = JRequest::getVar("token");
+		$type = JRequest::getVar("type");
 		
 		$db = JFactory::getDBO();
 		$db->setQuery("SELECT id FROM #__users WHERE facebook_id = '".$facebook_id."'");
@@ -143,20 +148,46 @@ class ApiControllerApi extends JControllerLegacy {
 				$result = array("result" => 0);
 				die(json_encode($result));
 			}
+			
+			$db->setQuery("INSERT INTO #__users_token (user_id, token, type) VALUES (".$id.", '".$token."', '".$type."')");
+			$db->execute();
 		} else {
 			$db->setQuery("INSERT INTO #__users (email, name, facebook_id) VALUES ('".$email."', '".$name."', '".$facebook_id."')");
 			if(!$db->execute()){
 				$result = array("result" => 0);
 				die(json_encode($result));
 			}
-			
+			$id = $db->insertid();
 			$db->setQuery("INSERT INTO #__user_profiles VALUES ('".$db->insertid()."', 'profile.gender', '".$gender."', 1), ('".$db->insertid()."', 'profile.dob', '".$dob."', 2);");
 			if(!$db->execute()){
 				$result = array("result" => 0);
 				die(json_encode($result));
 			}
+			
+			$db->setQuery("INSERT INTO #__users_token (user_id, token, type) VALUES (".$id.", '".$token."', '".$type."')");
+			$db->execute();
 		}
+		$result['user_id'] = $id;
 		die(json_encode($result));
+	}
+	
+	public function get_unread_campaigns(){
+		$user_id = JRequest::getVar("user_id");
+		$db = JFactory::getDBO();
+		$q = "SELECT campaign_id FROM #__campaign_users WHERE user_id = ".$user_id." AND viewed = 0";
+		$db->setQuery($q);
+		$campaign_ids = $db->loadColumn();
+		$campaign_str = implode(",", $campaign_ids);
+		
+		$q = "SELECT * FROM #__campaign WHERE id IN (".$campaign_str.") ORDER BY id DESC";
+		$db->setQuery($q);
+		$campaigns = $db->loadAssocList();
+		$i = 0;
+		foreach($campaigns as $campaign){
+			$campaigns[0]['campaign_image'] = JURI::base().$campaign['campaign_image'];
+			$i++;
+		}
+		die(json_encode($campaigns));
 	}
 	
 	public function get_read_campaigns(){
@@ -201,6 +232,48 @@ class ApiControllerApi extends JControllerLegacy {
 		$id = JRequest::getVar("id");
 		$db = JFactory::getDBO();
 		$db->setQuery("SELECT * FROM #__campaign WHERE id = ".$id);
-		$campaign = $db->loadResult();
+		$campaign = $db->loadAssoc();
+		$campaign['campaign_image'] = JURI::base().$campaign['campaign_image'];
+		die(json_encode($campaign));
+	}
+	
+	public function join_campaign(){
+		$user_id = JRequest::getVar("user_id");
+		$campaign_id = JRequest::getVar("campaign_id");
+		
+		$db = JFactory::getDBO();
+		$db->setQuery("INSERT INTO #__campaign_users (user_id, campaign_id, join_time, viewed, win, viewed_time) VALUES ('".$user_id."', '".$campaign_id."', NOW(), 0, 0, '')");
+		if($db->execute()){
+			$result = array("result" => 1);
+			die(json_encode($result));
+		} else {
+			$result = array("result" => 0);
+			die(json_encode($result));
+		}
+	}
+	
+	public function finish_viewing(){
+		$user_id = JRequest::getVar("user_id");
+		$campaign_id = JRequest::getVar("campaign_id");
+		
+		$db = JFactory::getDBO();
+		$db->setQuery("SELECT number_of_winners FROM #__campaign WHERE id = ".$campaign_id);
+		$nofw = $db->loadResult();
+		$db->setQuery("SELECT COUNT(*) FROM #__campaign_users WHERE campaign_id = ".$campaign_id." AND win = 1");
+		$nofw_current = $db->loadResult();
+		if($nofw_current < $nofw){
+			$rank = $nofw_current + 1;
+			$db->setQuery("UPDATE #__campaign_users SET viewed = 1, win = 1, viewed_time = NOW(), rank = ".$rank." WHERE user_id = ".$user_id." AND campaign_id = ". $campaign_id);
+			$db->execute();
+		} else {
+			$db->setQuery("SELECT MAX(rank) FROM #__campaign_users WHERE campaign_id = ".$campaign_id);
+			$current_rank = $db->loadResult();
+			$rank = $current_rank + 1;
+			$db->setQuery("UPDATE #__campaign_users SET viewed = 1, win = 0, viewed_time = NOW(), rank = ".$rank." WHERE user_id = ".$user_id." AND campaign_id = ". $campaign_id);
+			$db->execute();
+		}
+		
+		$result = array("rank" => $rank);
+		die(json_encode($result));
 	}
 }
