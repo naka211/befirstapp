@@ -26,7 +26,7 @@ class ApiControllerApi extends JControllerLegacy {
 			$userProfile = JUserHelper::getProfile( $user->id );
 			
 			$db->setQuery("INSERT INTO #__users_token (user_id, token, type) VALUES (".$user->id.", '".$token."', '".$type."')");
-			//$db->query();
+			$db->query();
 			
 			$data = array("result" => 1,
 						"user_id" => $user->id,
@@ -39,7 +39,7 @@ class ApiControllerApi extends JControllerLegacy {
 						"city" => $userProfile->profile["city"],
 						"picture" => JURI::base()."media/plg_user_profilepicture/images/original/".$userProfile->profilepicture["file"]
 			);
-			//
+			
 		} else {
 			$data = array("result" => 0);
 		}
@@ -112,23 +112,9 @@ class ApiControllerApi extends JControllerLegacy {
 		die(json_encode($result));
 	}
 	
-	public function get_campaigns(){
-		$user_id = JRequest::getVar("user_id");
-		$db = JFactory::getDBO();
-		$q = "SELECT id, name, campaign_image, reward, published FROM #__campaign ORDER BY published DESC, id DESC LIMIT 0,20";
-		$db->setQuery($q);
-		$campaigns = $db->loadAssocList();
-		$i = 0;
-		foreach($campaigns as $campaign){
-			$campaigns[0]['campaign_image'] = JURI::base().$campaign['campaign_image'];
-			$i++;
-		}
-		die(json_encode($campaigns));
-	}
-	
 	public function facebook_login(){
 		$facebook_id = JRequest::getVar("facebook_id");
-		$email = JRequest::getVar("email");
+		$email = JRequest::getVar("email", "");
 		$name = JRequest::getVar("name");
 		$gender = JRequest::getVar("gender", "");
 		$dob = JRequest::getVar("dob", "");
@@ -171,5 +157,50 @@ class ApiControllerApi extends JControllerLegacy {
 			}
 		}
 		die(json_encode($result));
+	}
+	
+	public function get_read_campaigns(){
+		$user_id = JRequest::getVar("user_id");
+		$db = JFactory::getDBO();
+		$q = "SELECT campaign_id FROM #__campaign_users WHERE user_id = ".$user_id." AND viewed = 1";
+		$db->setQuery($q);
+		$campaign_ids = $db->loadColumn();
+		$campaign_str = implode(",", $campaign_ids);
+		
+		$q = "SELECT * FROM #__campaign WHERE id IN (".$campaign_str.") ORDER BY id DESC";
+		$db->setQuery($q);
+		$campaigns = $db->loadAssocList();
+		$i = 0;
+		foreach($campaigns as $campaign){
+			$campaigns[0]['campaign_image'] = JURI::base().$campaign['campaign_image'];
+			$i++;
+		}
+		die(json_encode($campaigns));
+	}
+	
+	public function get_winning_campaigns(){
+		$user_id = JRequest::getVar("user_id");
+		$db = JFactory::getDBO();
+		$q = "SELECT campaign_id FROM #__campaign_users WHERE user_id = ".$user_id." AND win = 1 ";
+		$db->setQuery($q);
+		$campaign_ids = $db->loadColumn();
+		$campaign_str = implode(",", $campaign_ids);
+		
+		$q = "SELECT * FROM #__campaign WHERE id IN (".$campaign_str.") ORDER BY id DESC";
+		$db->setQuery($q);
+		$campaigns = $db->loadAssocList();
+		$i = 0;
+		foreach($campaigns as $campaign){
+			$campaigns[0]['campaign_image'] = JURI::base().$campaign['campaign_image'];
+			$i++;
+		}
+		die(json_encode($campaigns));
+	}
+	
+	public function get_campaign_detail(){
+		$id = JRequest::getVar("id");
+		$db = JFactory::getDBO();
+		$db->setQuery("SELECT * FROM #__campaign WHERE id = ".$id);
+		$campaign = $db->loadResult();
 	}
 }
