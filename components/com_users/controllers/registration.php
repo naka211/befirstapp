@@ -132,9 +132,9 @@ class UsersControllerRegistration extends UsersController
 		$password2 = JRequest::getVar("password2");
 		$gender = JRequest::getVar("gender");
 		$dob = JRequest::getVar("dob");
-		$address = JRequest::getVar("address");
+		$address = JRequest::getVar("address", "");
 		$postal_code = JRequest::getVar("postal_code");
-		$city = JRequest::getVar("city");
+		$city = JRequest::getVar("city", "");
 		
 		$requestData['name'] 		= $name;
 		$requestData['username'] 	= $username;
@@ -148,12 +148,13 @@ class UsersControllerRegistration extends UsersController
 		$requestData['profile']['postal_code'] 	= $postal_code;
 		$requestData['profile']['city'] 		= $city;
 		
-		
-		$_FILES['jform']['name']['profilepicture']['file'] = $_FILES['picture']['name'];
-		$_FILES['jform']['type']['profilepicture']['file'] = $_FILES['picture']['type'];
-		$_FILES['jform']['tmp_name']['profilepicture']['file'] = $_FILES['picture']['tmp_name'];
-		$_FILES['jform']['error']['profilepicture']['file'] = $_FILES['picture']['error'];
-		$_FILES['jform']['size']['profilepicture']['file'] = $_FILES['picture']['size'];
+		if($_FILES['picture']){
+			$_FILES['jform']['name']['profilepicture']['file'] = $_FILES['picture']['name'];
+			$_FILES['jform']['type']['profilepicture']['file'] = $_FILES['picture']['type'];
+			$_FILES['jform']['tmp_name']['profilepicture']['file'] = $_FILES['picture']['tmp_name'];
+			$_FILES['jform']['error']['profilepicture']['file'] = $_FILES['picture']['error'];
+			$_FILES['jform']['size']['profilepicture']['file'] = $_FILES['picture']['size'];
+		}
 		
 		// Validate the posted data.
 		$form = $model->getForm();
@@ -170,12 +171,14 @@ class UsersControllerRegistration extends UsersController
 		// Check for validation errors.
 		if ($data === false)
 		{
-			//T.Trung
-			$result['result'] = 0;
-			die(json_encode($result));
-			//T.Trung end
 			// Get the validation messages.
 			$errors = $model->getErrors();
+			
+			//T.Trung
+			$result['result'] = 0;
+			$result['error'] = $errors[0]->getMessage();
+			die(json_encode($result));
+			//T.Trung end
 
 			// Push up to three validation messages out to the user.
 			for ($i = 0, $n = count($errors); $i < $n && $i < 3; $i++)
@@ -202,11 +205,12 @@ class UsersControllerRegistration extends UsersController
 		// Attempt to save the data.
 		$return = $model->register($data);
 		//T.Trung
-		if($return == true){
-			$result['result'] = 1;
+		if($return == false){
+			$result['result'] = 0;
+			$result['error'] = $model->getError();
 			die(json_encode($result));
 		} else {
-			$result['result'] = 0;
+			$result['result'] = 1;
 			die(json_encode($result));
 		}
 		//T.Trung end

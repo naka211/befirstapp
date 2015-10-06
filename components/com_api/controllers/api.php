@@ -12,8 +12,6 @@ class ApiControllerApi extends JControllerLegacy {
 		$app    = JFactory::getApplication();
 		$username = JRequest::getVar("username");
 		$password = JRequest::getVar("password");
-		$type = JRequest::getVar("type");
-		$token = JRequest::getVar("token");
 		
 		$credentials["username"] = $username;
 		$credentials["password"] = $password;
@@ -27,9 +25,6 @@ class ApiControllerApi extends JControllerLegacy {
 			
 			$user = JFactory::getUser();
 			$userProfile = JUserHelper::getProfile( $user->id );
-			
-			$db->setQuery("INSERT INTO #__users_token (user_id, token, type) VALUES (".$user->id.", '".$token."', '".$type."')");
-			$db->execute();
 			
 			$data = array("result" => 1,
 						"user_id" => $user->id,
@@ -49,7 +44,7 @@ class ApiControllerApi extends JControllerLegacy {
         die(json_encode($data));
     }
 	
-	public function logout(){
+	public function delete_token(){
 		$user_id = JRequest::getVar("user_id");
 		$token = JRequest::getVar("token");
 		
@@ -274,6 +269,20 @@ class ApiControllerApi extends JControllerLegacy {
 		}
 		
 		$result = array("rank" => $rank);
+		die(json_encode($result));
+	}
+	
+	public function add_token(){
+		$type = JRequest::getVar("type");
+		$token = JRequest::getVar("token");
+		$user_id = JRequest::getVar("user_id");
+		
+		$db->setQuery("INSERT INTO #__users_token (user_id, token, type) VALUES (".$user_id.", '".$token."', '".$type."')");
+		if($db->execute()){
+			$result = array("result" => 1);
+		} else {
+			$result = array("result" => 0);
+		}
 		die(json_encode($result));
 	}
 }
