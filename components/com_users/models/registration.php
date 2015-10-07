@@ -389,6 +389,18 @@ class UsersModelRegistration extends JModelForm
 
 			return false;
 		}
+		
+		//T.Trung
+		if(JRequest::getVar("picture", "", "string")){
+			$filename = sha1(uniqid()).".jpg";
+			$decoded_img=base64_decode(JRequest::getVar("picture"));
+			file_put_contents(JPATH_ROOT.DIRECTORY_SEPARATOR.'media'.DIRECTORY_SEPARATOR.'plg_user_profilepicture'.DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'original'.DIRECTORY_SEPARATOR.$filename,$decoded_img);
+			file_put_contents(JPATH_ROOT.DIRECTORY_SEPARATOR.'media'.DIRECTORY_SEPARATOR.'plg_user_profilepicture'.DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'200'.DIRECTORY_SEPARATOR.$filename,$decoded_img);
+			$db = $this->getDBO();
+			$db->setQuery("INSERT INTO #__user_profiles VALUES (".$user->id.", 'profilepicture.file', '".$filename."', 1)");
+			$db->execute();
+		}
+		//T.Trung end
 
 		$config = JFactory::getConfig();
 		$db = $this->getDbo();

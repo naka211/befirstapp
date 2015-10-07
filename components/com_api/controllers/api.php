@@ -40,6 +40,7 @@ class ApiControllerApi extends JControllerLegacy {
 			
 		} else {
 			$data = array("result" => 0);
+			$result = array("error" => "Login fails");
 		}
         die(json_encode($data));
     }
@@ -55,11 +56,12 @@ class ApiControllerApi extends JControllerLegacy {
 			$data = array("result" => 1);
 		} else {
 			$data = array("result" => 0);
+			$result = array("error" => "Can not delete token");
 		}
 		die(json_encode($data));
 	}
 	
-	public function change_password(){
+	public function forgot_password(){
 		$email = JRequest::getVar("email");
 		
 		$new_pass = $this->_generateRandomString();
@@ -86,9 +88,11 @@ class ApiControllerApi extends JControllerLegacy {
 				$result = array("result" => 1);
 			} else {
 				$result = array("result" => 0);
+				$result = array("error" => "Can not update new password");
 			}
 		} else {
 			$result = array("result" => 0);
+			$result = array("error" => "Can not send email");
 		}
 		die(json_encode($result));
 	}
@@ -187,8 +191,10 @@ class ApiControllerApi extends JControllerLegacy {
 	
 	public function get_read_campaigns(){
 		$user_id = JRequest::getVar("user_id");
+		$page = JRequest::getVar("user_id", 1);
+		$limitstart = ($page-1) * 20;
 		$db = JFactory::getDBO();
-		$q = "SELECT campaign_id FROM #__campaign_users WHERE user_id = ".$user_id." AND viewed = 1";
+		$q = "SELECT campaign_id FROM #__campaign_users WHERE user_id = ".$user_id." AND viewed = 1 LIMIT ".$limitstart.", 20";
 		$db->setQuery($q);
 		$campaign_ids = $db->loadColumn();
 		$campaign_str = implode(",", $campaign_ids);
@@ -282,7 +288,50 @@ class ApiControllerApi extends JControllerLegacy {
 			$result = array("result" => 1);
 		} else {
 			$result = array("result" => 0);
+			$result = array("error" => "Can not insert new token");
 		}
 		die(json_encode($result));
+	}
+	
+	public function get_winners(){
+		$campaign_id = JRequest::getVar("campaign_id");
+		
+		$db = JFactory::getDBO();
+	
+		$q = "SELECT cu.user_id, cu.rank, u.name FROM #__campaign_users cu INNER JOIN #__users u ON cu.user_id = u.id WHERE cu.campaign_id = ".$campaign_id." AND cu.win = 1 ORDER BY cu.rank ASC";
+		$db->setQuery($q);
+		$winners = $db->loadAssocList();
+		$result = array("winners" => $winners);
+		die(json_encode($result));
+	}
+	
+	public function get_near_me(){
+		$campaign_id = JRequest::getVar("campaign_id");
+		$user_id = JRequest::getVar("user_id");
+		
+		$db = JFactory::getDBO();
+		$q = "SELECT rank FROM #__campaign_users WHERE campaign_id = ".$campaign_id." AND user_id = ".$user_id;
+		$db->setQuery($q);
+		$my_rank = $db->loadResult();
+		
+		$q = "SELECT number_of_winners FROM #__campaign WHERE id = ".$campaign_id;
+		$db->setQuery($q);
+		$nofw = $db->loadResult();
+		
+		$q = "SELECT COUNT(id) as user_total FROM #__campaign_users WHERE campaign_id = ".$campaign_id;
+		$db->setQuery($q);
+		$user_total = $db->loadResult();
+		
+		if(($my_rank == $nofw+1) && ($my_rank <= $user_total-2)){
+			$near_me = $this->_get_near($campaign_id, $my_rank, 2, 2);
+		}
+	}
+	
+	private function _get_two_below($campaign_id, $rank, $position, $limit){
+		//code tiếp
+		$below_me = ($rank+1).",".($rank+1);
+		$q = "SELECT cu.user_id, cu.rank, u.name FROM #__campaign_users cu INNER JOIN #__users u ON cu.user_id = u.id WHERE cu.campaign_id = ".$campaign_id." AND cu.rank IN () ORDER BY cu.rank ASC";
+		$db->setQuery($q);
+		$winners = $db->loadAssocList();
 	}
 }
