@@ -18,18 +18,6 @@ jimport('joomla.application.component.view');
 class CampaignViewList extends JViewLegacy {
 
     public function display($tpl = null) {
-        $this->addToolbar();
-
         parent::display($tpl);
     }
-
-    /**
-     * Add the page title and toolbar.
-     *
-     * @since	1.6
-     */
-    protected function addToolbar() {
-        JToolBarHelper::cancel('campaign.cancel', 'JTOOLBAR_CANCEL');
-    }
-
 }

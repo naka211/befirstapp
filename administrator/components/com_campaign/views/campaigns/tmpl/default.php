@@ -227,7 +227,7 @@ if (!empty($this->extra_sidebar))
 				</td>
 				<td>
 
-					<?php echo JHtml::_('date', $item->created_time, 'd-m-Y H:i:s'); ?>
+					<?php echo JHtml::_('date', $item->created_time, 'H:i:s d-m-Y'); ?>
 				</td>
 				<td>
 
