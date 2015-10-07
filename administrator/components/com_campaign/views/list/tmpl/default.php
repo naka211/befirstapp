@@ -8,7 +8,7 @@
  */
 
 // no direct access
-defined('_JEXEC') or die;
+defined('_JEXEC') or die;die('ok');
 
 JHtml::addIncludePath(JPATH_COMPONENT . '/helpers/html');
 JHtml::_('bootstrap.tooltip');
@@ -260,7 +260,7 @@ if (!empty($this->extra_sidebar))
 							</td>
 						<?php endif; ?>
                 <td>
-					<a href="index.php?option=com_campaign&view=list&campaign_id=<?php echo $item->id;?>">View list</a>
+					<a href="">View list</a>
 				</td>
 					</tr>
 				<?php endforeach; ?>

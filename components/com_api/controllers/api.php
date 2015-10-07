@@ -119,12 +119,11 @@ class ApiControllerApi extends JControllerLegacy {
 		$email = JRequest::getVar("email", "");
 		$name = JRequest::getVar("name");
 		$gender = JRequest::getVar("gender", "");
+		$postal_code = JRequest::getVar("postal_code", "");
 		$dob = JRequest::getVar("dob", "");
 		$tmp = explode("-", $dob);
 		$dob = $tmp[2]."-".$tmp[1]."-".$tmp[0]." 00:00:00";
-		$token = JRequest::getVar("token");
-		$type = JRequest::getVar("type");
-		
+				
 		$db = JFactory::getDBO();
 		$db->setQuery("SELECT id FROM #__users WHERE facebook_id = '".$facebook_id."'");
 		$id = $db->loadResult();
@@ -148,8 +147,12 @@ class ApiControllerApi extends JControllerLegacy {
 				die(json_encode($result));
 			}
 			
-			$db->setQuery("INSERT INTO #__users_token (user_id, token, type) VALUES (".$id.", '".$token."', '".$type."')");
-			$db->execute();
+			$db->setQuery("UPDATE #__user_profiles SET profile.value = ".$postal_code." WHERE user_id=".$id." AND profile_key = 'profile.postal_code'");
+			if(!$db->execute()){
+				$result = array("result" => 0);
+				die(json_encode($result));
+			}
+			
 		} else {
 			$db->setQuery("INSERT INTO #__users (email, name, facebook_id) VALUES ('".$email."', '".$name."', '".$facebook_id."')");
 			if(!$db->execute()){
@@ -157,14 +160,12 @@ class ApiControllerApi extends JControllerLegacy {
 				die(json_encode($result));
 			}
 			$id = $db->insertid();
-			$db->setQuery("INSERT INTO #__user_profiles VALUES ('".$db->insertid()."', 'profile.gender', '".$gender."', 1), ('".$db->insertid()."', 'profile.dob', '".$dob."', 2);");
+			$db->setQuery("INSERT INTO #__user_profiles VALUES ('".$db->insertid()."', 'profile.gender', '".$gender."', 1), ('".$db->insertid()."', 'profile.dob', '".$dob."', 2), ('".$db->insertid()."', 'profile.postal_code', '".$postal_code."', 2);");
 			if(!$db->execute()){
 				$result = array("result" => 0);
 				die(json_encode($result));
 			}
 			
-			$db->setQuery("INSERT INTO #__users_token (user_id, token, type) VALUES (".$id.", '".$token."', '".$type."')");
-			$db->execute();
 		}
 		$result['user_id'] = $id;
 		die(json_encode($result));
@@ -305,6 +306,19 @@ class ApiControllerApi extends JControllerLegacy {
 		die(json_encode($result));
 	}
 	
+	public function get_my_rank(){
+		$campaign_id = JRequest::getVar("campaign_id");
+		$user_id = JRequest::getVar("user_id");
+		
+		$db = JFactory::getDBO();
+		$q = "SELECT rank FROM #__campaign_users WHERE campaign_id = ".$campaign_id." AND user_id = ".$user_id;
+		$db->setQuery($q);
+		$my_rank = $db->loadResult();
+		
+		$result = array("rank" => $my_rank);
+		die(json_encode($result));
+	}
+	
 	public function get_near_me(){
 		$campaign_id = JRequest::getVar("campaign_id");
 		$user_id = JRequest::getVar("user_id");
@@ -322,16 +336,55 @@ class ApiControllerApi extends JControllerLegacy {
 		$db->setQuery($q);
 		$user_total = $db->loadResult();
 		
-		if(($my_rank == $nofw+1) && ($my_rank <= $user_total-2)){
-			$near_me = $this->_get_near($campaign_id, $my_rank, 2, 2);
+		if(($my_rank == 1) && ($my_rank <= $user_total-2)){
+			$near = $this->_get_near($campaign_id, $my_rank, 0, 2);
 		}
+		if(($my_rank == 2) && ($my_rank <= $user_total-2)){
+			$near = $this->_get_near($campaign_id, $my_rank, 1, 2);
+		}
+		if(($my_rank > 2) && ($my_rank == $user_total-1)){
+			$near = $this->_get_near($campaign_id, $my_rank, 2, 1);
+		}
+		if(($my_rank > 2) && ($my_rank == $user_total)){
+			$near = $this->_get_near($campaign_id, $my_rank, 2, 0);
+		}
+		if(($my_rank > 2) && ($my_rank < $user_total-2)){
+			$near = $this->_get_near($campaign_id, $my_rank, 2, 2);
+		}
+		
+		if(($my_rank == 1) && ($user_total == 1)){
+			$result = array("message" => "just 1 person");
+			die(json_encode($result));
+		}
+		
+		if(($my_rank == 1) && ($user_total == 2)){
+			$near = $this->_get_near($campaign_id, $my_rank, 0, 1);
+		}
+		if(($my_rank == 2) && ($user_total == 2)){
+			$near = $this->_get_near($campaign_id, $my_rank, 1, 0);
+		}
+		
+		if(($my_rank == 2) && ($user_total == 3)){
+			$near = $this->_get_near($campaign_id, $my_rank, 1, 1);
+		}
+		die(json_encode($near));
 	}
 	
-	private function _get_two_below($campaign_id, $rank, $position, $limit){
-		//code tiếp
-		$below_me = ($rank+1).",".($rank+1);
-		$q = "SELECT cu.user_id, cu.rank, u.name FROM #__campaign_users cu INNER JOIN #__users u ON cu.user_id = u.id WHERE cu.campaign_id = ".$campaign_id." AND cu.rank IN () ORDER BY cu.rank ASC";
+	private function _get_near($campaign_id, $rank, $above, $below){
+		$rank_arr = array();
+		for($i=1; $i<=$above; $i++){
+			$rank_arr[] = $rank - $i;
+		}
+		for($i=1; $i<=$below; $i++){
+			$rank_arr[] = $rank + $i;
+		}
+		$rank_str = implode(",", $rank_arr);
+		
+		$db = JFactory::getDBO();
+		$q = "SELECT cu.user_id, cu.rank, u.name FROM #__campaign_users cu INNER JOIN #__users u ON cu.user_id = u.id WHERE cu.campaign_id = ".$campaign_id." AND cu.rank IN (".$rank_str.") AND viewed = 1 ORDER BY cu.rank ASC";
 		$db->setQuery($q);
-		$winners = $db->loadAssocList();
+		$near = $db->loadAssocList();
+		
+		return $near;
 	}
 }
