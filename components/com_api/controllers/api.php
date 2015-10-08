@@ -125,61 +125,72 @@ class ApiControllerApi extends JControllerLegacy {
 		$dob = $tmp[2]."-".$tmp[1]."-".$tmp[0]." 00:00:00";
 				
 		$db = JFactory::getDBO();
-		$db->setQuery("SELECT id FROM #__users WHERE facebook_id = '".$facebook_id."'");
-		$id = $db->loadResult();
-		$result = array("result" => 1);
-		if($id){
-			$db->setQuery("UPDATE #__users SET name = '".$name."' WHERE facebook_id='".$facebook_id."'");
-			if(!$db->execute()){
-				$result = array("result" => 0);
-				die(json_encode($result));
+		$db->setQuery("SELECT id FROM #__users WHERE email = '".$email."'");
+		$isEmail = $db->loadResult();
+		if(!$isEmail){
+			$db->setQuery("SELECT id FROM #__users WHERE facebook_id = '".$facebook_id."'");
+			$id = $db->loadResult();
+			$result = array("result" => 1);
+			if($id){
+				$db->setQuery("UPDATE #__users SET name = '".$name."' WHERE facebook_id='".$facebook_id."'");
+				if(!$db->execute()){
+					$result = array("result" => 0);
+					die(json_encode($result));
+				}
+				
+				$db->setQuery("UPDATE #__user_profiles SET profile.value = ".$gender." WHERE user_id=".$id." AND profile_key = 'profile.gender'");
+				if(!$db->execute()){
+					$result = array("result" => 0);
+					die(json_encode($result));
+				}
+				
+				$db->setQuery("UPDATE #__user_profiles SET profile.value = ".$dob." WHERE user_id=".$id." AND profile_key = 'profile.dob'");
+				if(!$db->execute()){
+					$result = array("result" => 0);
+					die(json_encode($result));
+				}
+				
+				$db->setQuery("UPDATE #__user_profiles SET profile.value = ".$postal_code." WHERE user_id=".$id." AND profile_key = 'profile.postal_code'");
+				if(!$db->execute()){
+					$result = array("result" => 0);
+					die(json_encode($result));
+				}
+				
+			} else {
+				$db->setQuery("INSERT INTO #__users (email, name, facebook_id) VALUES ('".$email."', '".$name."', '".$facebook_id."')");
+				if(!$db->execute()){
+					$result = array("result" => 0);
+					die(json_encode($result));
+				}
+				$id = $db->insertid();
+				$db->setQuery("INSERT INTO #__user_profiles VALUES ('".$db->insertid()."', 'profile.gender', '".$gender."', 1), ('".$db->insertid()."', 'profile.dob', '".$dob."', 2), ('".$db->insertid()."', 'profile.postal_code', '".$postal_code."', 2);");
+				if(!$db->execute()){
+					$result = array("result" => 0);
+					die(json_encode($result));
+				}
+				
 			}
-			
-			$db->setQuery("UPDATE #__user_profiles SET profile.value = ".$gender." WHERE user_id=".$id." AND profile_key = 'profile.gender'");
-			if(!$db->execute()){
-				$result = array("result" => 0);
-				die(json_encode($result));
-			}
-			
-			$db->setQuery("UPDATE #__user_profiles SET profile.value = ".$dob." WHERE user_id=".$id." AND profile_key = 'profile.dob'");
-			if(!$db->execute()){
-				$result = array("result" => 0);
-				die(json_encode($result));
-			}
-			
-			$db->setQuery("UPDATE #__user_profiles SET profile.value = ".$postal_code." WHERE user_id=".$id." AND profile_key = 'profile.postal_code'");
-			if(!$db->execute()){
-				$result = array("result" => 0);
-				die(json_encode($result));
-			}
-			
+			$result['user_id'] = $id;
+			die(json_encode($result));
 		} else {
-			$db->setQuery("INSERT INTO #__users (email, name, facebook_id) VALUES ('".$email."', '".$name."', '".$facebook_id."')");
-			if(!$db->execute()){
-				$result = array("result" => 0);
-				die(json_encode($result));
-			}
-			$id = $db->insertid();
-			$db->setQuery("INSERT INTO #__user_profiles VALUES ('".$db->insertid()."', 'profile.gender', '".$gender."', 1), ('".$db->insertid()."', 'profile.dob', '".$dob."', 2), ('".$db->insertid()."', 'profile.postal_code', '".$postal_code."', 2);");
-			if(!$db->execute()){
-				$result = array("result" => 0);
-				die(json_encode($result));
-			}
-			
+			$result['user_id'] = $isEmail;
+			die(json_encode($result));
 		}
-		$result['user_id'] = $id;
-		die(json_encode($result));
 	}
 	
 	public function get_unread_campaigns(){
 		$user_id = JRequest::getVar("user_id");
 		$db = JFactory::getDBO();
-		$q = "SELECT campaign_id FROM #__campaign_users WHERE user_id = ".$user_id." AND viewed = 0";
+		$q = "SELECT campaign_id FROM #__campaign_users WHERE user_id = ".$user_id." AND viewed = 1";
 		$db->setQuery($q);
 		$campaign_ids = $db->loadColumn();
-		$campaign_str = implode(",", $campaign_ids);
+		if($campaign_ids){
+			$campaign_str = implode(",", $campaign_ids);
+			$q = "SELECT * FROM #__campaign WHERE id NOT IN (".$campaign_str.") ORDER BY id DESC";
+		} else {
+			$q = "SELECT * FROM #__campaign ORDER BY id DESC";
+		}
 		
-		$q = "SELECT * FROM #__campaign WHERE id IN (".$campaign_str.") ORDER BY id DESC";
 		$db->setQuery($q);
 		$campaigns = $db->loadAssocList();
 		$i = 0;
