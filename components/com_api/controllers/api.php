@@ -357,11 +357,10 @@ class ApiControllerApi extends JControllerLegacy {
 		
 		$db = JFactory::getDBO();
 	
-		$q = "SELECT cu.user_id, cu.rank, u.name FROM #__campaign_users cu INNER JOIN #__users u ON cu.user_id = u.id WHERE cu.campaign_id = ".$campaign_id." AND cu.win = 1 ORDER BY cu.rank ASC";
+		$q = "SELECT cu.user_id, cu.rank, u.name, cu.win FROM #__campaign_users cu INNER JOIN #__users u ON cu.user_id = u.id WHERE cu.campaign_id = ".$campaign_id." AND cu.win = 1 ORDER BY cu.rank ASC";
 		$db->setQuery($q);
 		$winners = $db->loadAssocList();
-		$result = array("winners" => $winners);
-		die(json_encode($result));
+		return $winners;
 	}
 	
 	public function get_my_rank(){
@@ -386,63 +385,86 @@ class ApiControllerApi extends JControllerLegacy {
 		$db->setQuery($q);
 		$my_rank = $db->loadResult();
 		
-		$q = "SELECT number_of_winners FROM #__campaign WHERE id = ".$campaign_id;
-		$db->setQuery($q);
-		$nofw = $db->loadResult();
-		
 		$q = "SELECT COUNT(id) as user_total FROM #__campaign_users WHERE campaign_id = ".$campaign_id;
 		$db->setQuery($q);
 		$user_total = $db->loadResult();
 		
 		if(($my_rank == 1) && ($my_rank <= $user_total-2)){
-			$near = $this->_get_near($campaign_id, $my_rank, 0, 2);
+			$near = $this->_get_near($campaign_id, 1, 3);
 		}
 		if(($my_rank == 2) && ($my_rank <= $user_total-2)){
-			$near = $this->_get_near($campaign_id, $my_rank, 1, 2);
+			$near = $this->_get_near($campaign_id, 1, 4);
 		}
-		if(($my_rank > 2) && ($my_rank == $user_total-1)){
-			$near = $this->_get_near($campaign_id, $my_rank, 2, 1);
+		if(($my_rank > 2) && ($my_rank >= $user_total-1)){
+			$near = $this->_get_near($campaign_id, $my_rank-2, $user_total);
 		}
-		if(($my_rank > 2) && ($my_rank == $user_total)){
-			$near = $this->_get_near($campaign_id, $my_rank, 2, 0);
-		}
+
 		if(($my_rank > 2) && ($my_rank < $user_total-2)){
-			$near = $this->_get_near($campaign_id, $my_rank, 2, 2);
+			$near = $this->_get_near($campaign_id, $my_rank-2, $my_rank+2);
 		}
 		
-		if(($my_rank == 1) && ($user_total == 1)){
-			$result = array("message" => "just 1 person");
-			die(json_encode($result));
-		}
 		
-		if(($my_rank == 1) && ($user_total == 2)){
-			$near = $this->_get_near($campaign_id, $my_rank, 0, 1);
-		}
-		if(($my_rank == 2) && ($user_total == 2)){
-			$near = $this->_get_near($campaign_id, $my_rank, 1, 0);
+		if(($my_rank <= 2) && ($user_total == 2)){
+			$near = $this->_get_near($campaign_id, 1, 2);
 		}
 		
 		if(($my_rank == 2) && ($user_total == 3)){
-			$near = $this->_get_near($campaign_id, $my_rank, 1, 1);
+			$near = $this->_get_near($campaign_id, 1, 3);
 		}
-		die(json_encode($near));
+		return $near;
 	}
 	
-	private function _get_near($campaign_id, $rank, $above, $below){
+	private function _get_near($campaign_id, $from, $to){
 		$rank_arr = array();
-		for($i=1; $i<=$above; $i++){
-			$rank_arr[] = $rank - $i;
+		for($i=$from; $i<=$to; $i++){
+			$rank_arr[] = $i;
 		}
-		for($i=1; $i<=$below; $i++){
-			$rank_arr[] = $rank + $i;
-		}
+		
 		$rank_str = implode(",", $rank_arr);
 		
 		$db = JFactory::getDBO();
-		$q = "SELECT cu.user_id, cu.rank, u.name FROM #__campaign_users cu INNER JOIN #__users u ON cu.user_id = u.id WHERE cu.campaign_id = ".$campaign_id." AND cu.rank IN (".$rank_str.") AND viewed = 1 ORDER BY cu.rank ASC";
+		$q = "SELECT cu.user_id, cu.rank, u.name, cu.win FROM #__campaign_users cu INNER JOIN #__users u ON cu.user_id = u.id WHERE cu.campaign_id = ".$campaign_id." AND cu.rank IN (".$rank_str.") AND viewed = 1 ORDER BY cu.rank ASC";
 		$db->setQuery($q);
 		$near = $db->loadAssocList();
 		
 		return $near;
+	}
+	
+	public function get_list(){
+		$winners = $this->get_winners();
+		$near = $this->get_near_me();
+		$list = $winners;
+		
+		foreach($winners as $winner){
+			$win_arr[] = $winner["user_id"];
+		}
+		foreach($near as $item){
+			if(!in_array($item["user_id"], $win_arr)){
+				array_push($list, $item);
+			}
+		}
+		
+		$db = JFactory::getDBO();
+		$i = 0;
+		foreach($list as $item){
+			$db->setQuery("SELECT profile_value FROM #__user_profiles WHERE user_id = ".$item["user_id"]." AND profile_key = 'profilepicture.file'");
+			if($db->loadResult()){
+				$list[$i]['picture'] = JURI::base()."media/plg_user_profilepicture/images/original/".$db->loadResult();
+			} else {
+				$list[$i]['picture'] = "";
+			}
+			
+			$i++;
+		}
+		if($list){
+			$return["result"] = 1;
+			$return["data"] = $list;
+			$return["error"] = "";
+		} else {
+			$return["result"] = 0;
+			$return["data"] = NULL;
+			$return["error"] = "Not result";
+		}
+		die(json_encode($return));
 	}
 }
