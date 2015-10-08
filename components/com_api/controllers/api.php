@@ -39,8 +39,8 @@ class ApiControllerApi extends JControllerLegacy {
 			);
 			
 		} else {
-			$data = array("result" => 0);
-			$result = array("error" => "Login fails");
+			$data["result"] = 0;
+			$data["error"] = "Email or password is incorrect";
 		}
         die(json_encode($data));
     }
@@ -53,12 +53,13 @@ class ApiControllerApi extends JControllerLegacy {
 		$q = "DELETE FROM #__users_token WHERE user_id = ".(int)$user_id." AND token = '".$token."'";
 		$db->setQuery($q);
 		if($db->query()){
-			$data = array("result" => 1);
+			$return["result"] = 1;
+			$return["error"] = "";
 		} else {
-			$data = array("result" => 0);
-			$result = array("error" => "Can not delete token");
+			$return["result"] = 0;
+			$return["error"] = "Can not delete token";
 		}
-		die(json_encode($data));
+		die(json_encode($return));
 	}
 	
 	public function forgot_password(){
@@ -87,12 +88,12 @@ class ApiControllerApi extends JControllerLegacy {
 			if($db->query()){
 				$result = array("result" => 1);
 			} else {
-				$result = array("result" => 0);
-				$result = array("error" => "Can not update new password");
+				$data["result"] = 0;
+				$data["error"] = "Can not update new password";
 			}
 		} else {
-			$result = array("result" => 0);
-			$result = array("error" => "Can not send email");
+			$data["result"] = 0;
+			$data["error"] = "Can not send email";
 		}
 		die(json_encode($result));
 	}
@@ -134,7 +135,8 @@ class ApiControllerApi extends JControllerLegacy {
 			if($id){
 				$db->setQuery("UPDATE #__users SET name = '".$name."' WHERE facebook_id='".$facebook_id."'");
 				if(!$db->execute()){
-					$result = array("result" => 0);
+					$result['result'] = 0;
+					$result['error'] = "Can't update Facebook id";
 					die(json_encode($result));
 				}
 				
@@ -170,9 +172,11 @@ class ApiControllerApi extends JControllerLegacy {
 				}
 				
 			}
+			$result['result'] = 1;
 			$result['user_id'] = $id;
 			die(json_encode($result));
 		} else {
+			$result['result'] = 1;
 			$result['user_id'] = $isEmail;
 			die(json_encode($result));
 		}
@@ -193,52 +197,84 @@ class ApiControllerApi extends JControllerLegacy {
 		
 		$db->setQuery($q);
 		$campaigns = $db->loadAssocList();
-		$i = 0;
-		foreach($campaigns as $campaign){
-			$campaigns[0]['campaign_image'] = JURI::base().$campaign['campaign_image'];
-			$i++;
+		if($campaigns){
+			$i = 0;
+			foreach($campaigns as $campaign){
+				$campaigns[$i]['campaign_image'] = JURI::base().$campaign['campaign_image'];
+				$i++;
+			}
+			$return["result"] = 1;
+			$return["data"] = $campaigns;
+			$return["error"] = "";
+			die(json_encode($return));
+		} else {
+			$return["result"] = 0;
+			$return["data"] = NULL;
+			$return["error"] = "Not results";
+			die(json_encode($return));
 		}
-		die(json_encode($campaigns));
 	}
 	
 	public function get_read_campaigns(){
 		$user_id = JRequest::getVar("user_id");
-		$page = JRequest::getVar("user_id", 1);
+		$page = JRequest::getVar("page", 1);
 		$limitstart = ($page-1) * 20;
 		$db = JFactory::getDBO();
 		$q = "SELECT campaign_id FROM #__campaign_users WHERE user_id = ".$user_id." AND viewed = 1 LIMIT ".$limitstart.", 20";
 		$db->setQuery($q);
 		$campaign_ids = $db->loadColumn();
-		$campaign_str = implode(",", $campaign_ids);
+		if($campaign_ids){
+			$campaign_str = implode(",", $campaign_ids);
+			$q = "SELECT * FROM #__campaign WHERE id IN (".$campaign_str.") ORDER BY id DESC";
 		
-		$q = "SELECT * FROM #__campaign WHERE id IN (".$campaign_str.") ORDER BY id DESC";
-		$db->setQuery($q);
-		$campaigns = $db->loadAssocList();
-		$i = 0;
-		foreach($campaigns as $campaign){
-			$campaigns[0]['campaign_image'] = JURI::base().$campaign['campaign_image'];
-			$i++;
+			$db->setQuery($q);
+			$campaigns = $db->loadAssocList();
+			$i = 0;
+			foreach($campaigns as $campaign){
+				$campaigns[$i]['campaign_image'] = JURI::base().$campaign['campaign_image'];
+				$i++;
+			}
+			$return["result"] = 1;
+			$return["data"] = $campaigns;
+			$return["error"] = "";
+			die(json_encode($return));
+		} else {
+			$return["result"] = 0;
+			$return["data"] = NULL;
+			$return["error"] = "Not results";
+			die(json_encode($return));
 		}
-		die(json_encode($campaigns));
 	}
 	
 	public function get_winning_campaigns(){
 		$user_id = JRequest::getVar("user_id");
+		$page = JRequest::getVar("page", 1);
+		$limitstart = ($page-1) * 20;
 		$db = JFactory::getDBO();
-		$q = "SELECT campaign_id FROM #__campaign_users WHERE user_id = ".$user_id." AND win = 1 ";
+		$q = "SELECT campaign_id FROM #__campaign_users WHERE user_id = ".$user_id." AND win = 1 LIMIT ".$limitstart.", 20";
 		$db->setQuery($q);
 		$campaign_ids = $db->loadColumn();
-		$campaign_str = implode(",", $campaign_ids);
-		
-		$q = "SELECT * FROM #__campaign WHERE id IN (".$campaign_str.") ORDER BY id DESC";
-		$db->setQuery($q);
-		$campaigns = $db->loadAssocList();
-		$i = 0;
-		foreach($campaigns as $campaign){
-			$campaigns[0]['campaign_image'] = JURI::base().$campaign['campaign_image'];
-			$i++;
+		if($campaign_ids){
+			$campaign_str = implode(",", $campaign_ids);
+			
+			$q = "SELECT * FROM #__campaign WHERE id IN (".$campaign_str.") ORDER BY id DESC";
+			$db->setQuery($q);
+			$campaigns = $db->loadAssocList();
+			$i = 0;
+			foreach($campaigns as $campaign){
+				$campaigns[$i]['campaign_image'] = JURI::base().$campaign['campaign_image'];
+				$i++;
+			}
+			$return["result"] = 1;
+			$return["data"] = $campaigns;
+			$return["error"] = "";
+			die(json_encode($return));
+		} else {
+			$return["result"] = 0;
+			$return["data"] = NULL;
+			$return["error"] = "Not results";
+			die(json_encode($return));
 		}
-		die(json_encode($campaigns));
 	}
 	
 	public function get_campaign_detail(){
@@ -247,7 +283,16 @@ class ApiControllerApi extends JControllerLegacy {
 		$db->setQuery("SELECT * FROM #__campaign WHERE id = ".$id);
 		$campaign = $db->loadAssoc();
 		$campaign['campaign_image'] = JURI::base().$campaign['campaign_image'];
-		die(json_encode($campaign));
+		if($campaign){
+			$return["result"] = 1;
+			$return["data"] = $campaign;
+			$return["error"] = "";
+		} else {
+			$return["result"] = 0;
+			$return["data"] = NULL;
+			$return["error"] = "Not results";
+		}
+		die(json_encode($return));
 	}
 	
 	public function join_campaign(){
@@ -257,12 +302,13 @@ class ApiControllerApi extends JControllerLegacy {
 		$db = JFactory::getDBO();
 		$db->setQuery("INSERT INTO #__campaign_users (user_id, campaign_id, join_time, viewed, win, viewed_time) VALUES ('".$user_id."', '".$campaign_id."', NOW(), 0, 0, '')");
 		if($db->execute()){
-			$result = array("result" => 1);
-			die(json_encode($result));
+			$return["result"] = 1;
+			$return["error"] = "";
 		} else {
-			$result = array("result" => 0);
-			die(json_encode($result));
+			$return["result"] = 0;
+			$return["error"] = "Can't join campaign";
 		}
+		die(json_encode($result));
 	}
 	
 	public function finish_viewing(){
@@ -297,12 +343,13 @@ class ApiControllerApi extends JControllerLegacy {
 		
 		$db->setQuery("INSERT INTO #__users_token (user_id, token, type) VALUES (".$user_id.", '".$token."', '".$type."')");
 		if($db->execute()){
-			$result = array("result" => 1);
+			$return["result"] = 1;
+			$return["error"] = "";
 		} else {
-			$result = array("result" => 0);
-			$result = array("error" => "Can not insert new token");
+			$return["result"] = 0;
+			$return["error"] = "Can not insert new token";
 		}
-		die(json_encode($result));
+		die(json_encode($return));
 	}
 	
 	public function get_winners(){
