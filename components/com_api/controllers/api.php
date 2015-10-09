@@ -126,12 +126,12 @@ class ApiControllerApi extends JControllerLegacy {
 		$dob = $tmp[2]."-".$tmp[1]."-".$tmp[0]." 00:00:00";
 				
 		$db = JFactory::getDBO();
-		$db->setQuery("SELECT id FROM #__users WHERE email = '".$email."'");
-		$isEmail = $db->loadResult();
-		if(!$isEmail){
+		$db->setQuery("SELECT id FROM #__users WHERE email = '".$email."' AND facebook_id != '".$facebook_id."'");
+		$isRegister = $db->loadResult();
+		if(!$isRegister){
 			$db->setQuery("SELECT id FROM #__users WHERE facebook_id = '".$facebook_id."'");
 			$id = $db->loadResult();
-			$result = array("result" => 1);
+			
 			if($id){
 				$db->setQuery("UPDATE #__users SET name = '".$name."' WHERE facebook_id='".$facebook_id."'");
 				if(!$db->execute()){
@@ -140,19 +140,19 @@ class ApiControllerApi extends JControllerLegacy {
 					die(json_encode($result));
 				}
 				
-				$db->setQuery("UPDATE #__user_profiles SET profile.value = ".$gender." WHERE user_id=".$id." AND profile_key = 'profile.gender'");
+				$db->setQuery("UPDATE #__user_profiles SET profile_value = ".$gender." WHERE user_id=".$id." AND profile_key = 'profile.gender'");
 				if(!$db->execute()){
 					$result = array("result" => 0);
 					die(json_encode($result));
 				}
 				
-				$db->setQuery("UPDATE #__user_profiles SET profile.value = ".$dob." WHERE user_id=".$id." AND profile_key = 'profile.dob'");
+				$db->setQuery("UPDATE #__user_profiles SET profile_value = '".$dob."' WHERE user_id=".$id." AND profile_key = 'profile.dob'");
 				if(!$db->execute()){
 					$result = array("result" => 0);
 					die(json_encode($result));
 				}
 				
-				$db->setQuery("UPDATE #__user_profiles SET profile.value = ".$postal_code." WHERE user_id=".$id." AND profile_key = 'profile.postal_code'");
+				$db->setQuery("UPDATE #__user_profiles SET profile_value = '".$postal_code."' WHERE user_id=".$id." AND profile_key = 'profile.postal_code'");
 				if(!$db->execute()){
 					$result = array("result" => 0);
 					die(json_encode($result));
@@ -165,20 +165,30 @@ class ApiControllerApi extends JControllerLegacy {
 					die(json_encode($result));
 				}
 				$id = $db->insertid();
-				$db->setQuery("INSERT INTO #__user_profiles VALUES ('".$db->insertid()."', 'profile.gender', '".$gender."', 1), ('".$db->insertid()."', 'profile.dob', '".$dob."', 2), ('".$db->insertid()."', 'profile.postal_code', '".$postal_code."', 2);");
+				$db->setQuery("INSERT INTO #__user_profiles VALUES ('".$db->insertid()."', 'profile.gender', '".$gender."', 1), ('".$db->insertid()."', 'profile.dob', '".$dob."', 2), ('".$db->insertid()."', 'profile.postal_code', '".$postal_code."', 4);");
 				if(!$db->execute()){
 					$result = array("result" => 0);
 					die(json_encode($result));
 				}
 				
 			}
-			$result['result'] = 1;
-			$result['user_id'] = $id;
-			die(json_encode($result));
+			$user = JFactory::getUser($id);
+			$userProfile = JUserHelper::getProfile( $user->id );
+			$return['result'] = 1;
+			$return['error'] = "";
+			$return['user_id'] = $user->id;
+			$return['name'] = $user->name;
+			$return['email'] = $user->email;
+			$return['gender'] = $userProfile->profile["gender"];
+			$return['dob'] = JHtml::_('date', $userProfile->profile["dob"], 'd-m-Y');
+			$return['address'] = $userProfile->profile["address"];
+			$return['postal_code'] = $userProfile->profile["postal_code"];
+			$return['city'] = $userProfile->profile["city"];
+			die(json_encode($return));
 		} else {
-			$result['result'] = 1;
-			$result['user_id'] = $isEmail;
-			die(json_encode($result));
+			$return['result'] = 0;
+			$return['error'] = "Email is registed, please use this email to login";
+			die(json_encode($return));
 		}
 	}
 	
@@ -300,7 +310,7 @@ class ApiControllerApi extends JControllerLegacy {
 		$campaign_id = JRequest::getVar("campaign_id");
 		
 		$db = JFactory::getDBO();
-		$db->setQuery("INSERT INTO #__campaign_users (user_id, campaign_id, join_time, viewed, win, viewed_time) VALUES ('".$user_id."', '".$campaign_id."', NOW(), 0, 0, '')");
+		$db->setQuery("INSERT INTO #__campaign_users (user_id, campaign_id, join_time, viewed, win) VALUES ('".$user_id."', '".$campaign_id."', NOW(), 0, 0)");
 		if($db->execute()){
 			$return["result"] = 1;
 			$return["error"] = "";
@@ -308,7 +318,7 @@ class ApiControllerApi extends JControllerLegacy {
 			$return["result"] = 0;
 			$return["error"] = "Can't join campaign";
 		}
-		die(json_encode($result));
+		die(json_encode($return));
 	}
 	
 	public function finish_viewing(){
