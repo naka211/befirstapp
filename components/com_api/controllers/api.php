@@ -35,7 +35,8 @@ class ApiControllerApi extends JControllerLegacy {
 						"address" => $userProfile->profile["address"],
 						"postal_code" => $userProfile->profile["postal_code"],
 						"city" => $userProfile->profile["city"],
-						"picture" => JURI::base()."media/plg_user_profilepicture/images/original/".$userProfile->profilepicture["file"]
+						"picture" => JURI::base()."media/plg_user_profilepicture/images/original/".$userProfile->profilepicture["file"],
+						"facebook_id" => ""
 			);
 			
 		} else {
@@ -45,12 +46,30 @@ class ApiControllerApi extends JControllerLegacy {
         die(json_encode($data));
     }
 	
+	public function add_token(){
+		$type = JRequest::getVar("type");
+		$token = JRequest::getVar("token");
+		$user_id = JRequest::getVar("user_id");
+		$hw_id = JRequest::getVar("hw_id");
+		
+		$db->setQuery("INSERT INTO #__users_token (user_id, token, hw_id, type) VALUES (".$user_id.", '".$token."', '".$hw_id."', '".$type."')");
+		if($db->execute()){
+			$return["result"] = 1;
+			$return["error"] = "";
+		} else {
+			$return["result"] = 0;
+			$return["error"] = "Can not insert new token";
+		}
+		die(json_encode($return));
+	}
+	
 	public function delete_token(){
 		$user_id = JRequest::getVar("user_id");
 		$token = JRequest::getVar("token");
+		$hw_id = JRequest::getVar("hw_id");
 		
 		$db = JFactory::getDBO();
-		$q = "DELETE FROM #__users_token WHERE user_id = ".(int)$user_id." AND token = '".$token."'";
+		$q = "DELETE FROM #__users_token WHERE user_id = ".(int)$user_id." AND token = '".$token."' AND hw_id = '".$hw_id."'";
 		$db->setQuery($q);
 		if($db->query()){
 			$return["result"] = 1;
@@ -114,14 +133,46 @@ class ApiControllerApi extends JControllerLegacy {
 		$result = array("text" => $db->loadResult());
 		die(json_encode($result));
 	}
-	
 	public function facebook_login(){
 		$facebook_id = JRequest::getVar("facebook_id");
-		$email = JRequest::getVar("email", "");
+		
+		$db = JFactory::getDBO();
+		$db->setQuery("SELECT id FROM #__users WHERE facebook_id = '".$facebook_id."'");	
+		$user_id = $db->loadResult();
+		
+		if($user_id){
+			$user = JFactory::getUser($user_id);
+			$userProfile = JUserHelper::getProfile($user_id);
+			
+			$return['result'] = 1;
+			$return['error'] = "";
+			$return['user_id'] = $user->id;
+			$return['name'] = $user->name;
+			$return['email'] = $user->email;
+			$return['gender'] = $userProfile->profile["gender"];
+			$return['dob'] = JHtml::_('date', $userProfile->profile["dob"], 'd-m-Y');
+			$return['address'] = $userProfile->profile["address"];
+			$return['postal_code'] = $userProfile->profile["postal_code"];
+			$return['city'] = $userProfile->profile["city"];
+			$return['picture'] = "";
+			$return['facebook_id'] = $facebook_id;
+			
+			die(json_encode($return));
+		} else {
+			$return['result'] = 0;
+			$return['data'] = "";
+			$return['error'] = "This account is not registerd yet.";
+			
+			die(json_encode($return));
+		}
+	}
+	public function facebook_update(){
+		$facebook_id = JRequest::getVar("facebook_id");
+		$email = JRequest::getVar("email");
 		$name = JRequest::getVar("name");
-		$gender = JRequest::getVar("gender", "");
-		$postal_code = JRequest::getVar("postal_code", "");
-		$dob = JRequest::getVar("dob", "");
+		$gender = JRequest::getVar("gender");
+		$postal_code = JRequest::getVar("postal_code");
+		$dob = JRequest::getVar("dob");
 		$tmp = explode("-", $dob);
 		$dob = $tmp[2]."-".$tmp[1]."-".$tmp[0]." 00:00:00";
 				
@@ -159,7 +210,7 @@ class ApiControllerApi extends JControllerLegacy {
 				}
 				
 			} else {
-				$db->setQuery("INSERT INTO #__users (email, name, facebook_id) VALUES ('".$email."', '".$name."', '".$facebook_id."')");
+				$db->setQuery("INSERT INTO #__users (email, name, username, facebook_id) VALUES ('".$email."', '".$name."', '".$email."', '".$facebook_id."')");
 				if(!$db->execute()){
 					$result = array("result" => 0);
 					die(json_encode($result));
@@ -184,6 +235,8 @@ class ApiControllerApi extends JControllerLegacy {
 			$return['address'] = $userProfile->profile["address"];
 			$return['postal_code'] = $userProfile->profile["postal_code"];
 			$return['city'] = $userProfile->profile["city"];
+			$return['picture'] = "";
+			$return['facebook_id'] = $facebook_id;
 			die(json_encode($return));
 		} else {
 			$return['result'] = 0;
@@ -211,6 +264,9 @@ class ApiControllerApi extends JControllerLegacy {
 			$i = 0;
 			foreach($campaigns as $campaign){
 				$campaigns[$i]['campaign_image'] = JURI::base().$campaign['campaign_image'];
+				if($campaigns[$i]['image'] != ""){
+					$campaigns[$i]['image'] = JURI::base().$campaign['image'];
+				}
 				$i++;
 			}
 			$return["result"] = 1;
@@ -346,28 +402,10 @@ class ApiControllerApi extends JControllerLegacy {
 		die(json_encode($result));
 	}
 	
-	public function add_token(){
-		$type = JRequest::getVar("type");
-		$token = JRequest::getVar("token");
-		$user_id = JRequest::getVar("user_id");
-		
-		$db->setQuery("INSERT INTO #__users_token (user_id, token, type) VALUES (".$user_id.", '".$token."', '".$type."')");
-		if($db->execute()){
-			$return["result"] = 1;
-			$return["error"] = "";
-		} else {
-			$return["result"] = 0;
-			$return["error"] = "Can not insert new token";
-		}
-		die(json_encode($return));
-	}
-	
-	public function get_winners(){
-		$campaign_id = JRequest::getVar("campaign_id");
-		
+	public function get_winners($campaign_id){
 		$db = JFactory::getDBO();
 	
-		$q = "SELECT cu.user_id, cu.rank, u.name, cu.win FROM #__campaign_users cu INNER JOIN #__users u ON cu.user_id = u.id WHERE cu.campaign_id = ".$campaign_id." AND cu.win = 1 ORDER BY cu.rank ASC";
+		$q = "SELECT cu.user_id, cu.rank, u.name, cu.win, u.facebook_id FROM #__campaign_users cu INNER JOIN #__users u ON cu.user_id = u.id WHERE cu.campaign_id = ".$campaign_id." AND cu.win = 1 ORDER BY cu.rank ASC";
 		$db->setQuery($q);
 		$winners = $db->loadAssocList();
 		return $winners;
@@ -386,9 +424,8 @@ class ApiControllerApi extends JControllerLegacy {
 		die(json_encode($result));
 	}
 	
-	public function get_near_me(){
-		$campaign_id = JRequest::getVar("campaign_id");
-		$user_id = JRequest::getVar("user_id");
+	public function get_near_me($campaign_id, $user_id){
+		
 		
 		$db = JFactory::getDBO();
 		$q = "SELECT rank FROM #__campaign_users WHERE campaign_id = ".$campaign_id." AND user_id = ".$user_id;
@@ -433,7 +470,7 @@ class ApiControllerApi extends JControllerLegacy {
 		$rank_str = implode(",", $rank_arr);
 		
 		$db = JFactory::getDBO();
-		$q = "SELECT cu.user_id, cu.rank, u.name, cu.win FROM #__campaign_users cu INNER JOIN #__users u ON cu.user_id = u.id WHERE cu.campaign_id = ".$campaign_id." AND cu.rank IN (".$rank_str.") AND viewed = 1 ORDER BY cu.rank ASC";
+		$q = "SELECT cu.user_id, cu.rank, u.name, cu.win, u.facebook_id FROM #__campaign_users cu INNER JOIN #__users u ON cu.user_id = u.id WHERE cu.campaign_id = ".$campaign_id." AND cu.rank IN (".$rank_str.") AND viewed = 1 ORDER BY cu.rank ASC";
 		$db->setQuery($q);
 		$near = $db->loadAssocList();
 		
@@ -441,8 +478,11 @@ class ApiControllerApi extends JControllerLegacy {
 	}
 	
 	public function get_list(){
-		$winners = $this->get_winners();
-		$near = $this->get_near_me();
+		$campaign_id = JRequest::getVar("campaign_id");
+		$user_id = JRequest::getVar("user_id");
+		
+		$winners = $this->get_winners($campaign_id);
+		$near = $this->get_near_me($campaign_id, $user_id);
 		$list = $winners;
 		
 		foreach($winners as $winner){

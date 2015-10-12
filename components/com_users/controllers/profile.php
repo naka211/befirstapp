@@ -139,17 +139,17 @@ class UsersControllerProfile extends UsersController
 		//$data['id'] = $userId;
 
 		// Validate the posted data.
-		$form = $model->getForm();
+		/*$form = $model->getForm();
 
 		if (!$form)
 		{
 			JError::raiseError(500, $model->getError());
 
 			return false;
-		}
+		}*/
 
 		// Validate the posted data.
-		$data = $model->validate($form, $data);
+		/*$data = $model->validate($form, $data);
 
 		// Check for errors.
 		if ($data === false)
@@ -178,16 +178,39 @@ class UsersControllerProfile extends UsersController
 			$this->setRedirect(JRoute::_('index.php?option=com_users&view=profile&layout=edit&user_id=' . $userId, false));
 
 			return false;
-		}
+		}*/
 
 		// Attempt to save the data.
 		$return = $model->save($data);
 		//T.Trung
-		if($return == true){
-			$result['result'] = 1;
+		if($return == false){
+			$result['result'] = 0;
+			$result['error'] = "Update fail";
+			
 			die(json_encode($result));
 		} else {
-			$result['result'] = 0;
+			$user = JFactory::getUser($user_id);
+			$userProfile = JUserHelper::getProfile($user_id);
+			
+			$result['result'] = 1;
+			$result['error'] = "";
+			$result['user_id'] = $user->id;
+			$result['name'] = $user->name;
+			$result['email'] = $user->email;
+			$result['gender'] = $userProfile->profile["gender"];
+			$result['dob'] = JHtml::_('date', $userProfile->profile["dob"], 'd-m-Y');
+			$result['address'] = $userProfile->profile["address"];
+			$result['postal_code'] = $userProfile->profile["postal_code"];
+			$result['city'] = $userProfile->profile["city"];
+			if($userProfile->profilepicture["file"]){
+				$result['picture'] = JURI::base()."media/plg_user_profilepicture/images/original/".$userProfile->profilepicture["file"];
+			} else {
+				$result['picture'] = "";
+			}
+			$db = JFactory::getDBO();
+			$db->setQuery("SELECT facebook_id FROM #__users WHERE id = ".$user_id);
+			$result['facebook_id'] = $db->loadResult();
+			
 			die(json_encode($result));
 		}
 		//T.Trung end
