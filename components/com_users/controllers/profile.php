@@ -104,7 +104,7 @@ class UsersControllerProfile extends UsersController
 		$email1 = JRequest::getVar("email");
 		$email2 = JRequest::getVar("email");
 		$username = JRequest::getVar("email");
-		$password1 = JRequest::getVar("password1", "");
+		$password1 = JRequest::getVar("password1");
 		$password2 = JRequest::getVar("password2");
 		$gender = JRequest::getVar("gender");
 		$dob = JRequest::getVar("dob");

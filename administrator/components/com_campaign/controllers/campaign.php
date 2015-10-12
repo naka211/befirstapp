@@ -22,5 +22,7 @@ class CampaignControllerCampaign extends JControllerForm
         $this->view_list = 'campaigns';
         parent::__construct();
     }
+	
+	
 
 }

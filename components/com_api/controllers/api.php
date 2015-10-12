@@ -52,6 +52,7 @@ class ApiControllerApi extends JControllerLegacy {
 		$user_id = JRequest::getVar("user_id");
 		$hw_id = JRequest::getVar("hw_id");
 		
+		$db = JFactory::getDBO();
 		$db->setQuery("INSERT INTO #__users_token (user_id, token, hw_id, type) VALUES (".$user_id.", '".$token."', '".$hw_id."', '".$type."')");
 		if($db->execute()){
 			$return["result"] = 1;
@@ -65,11 +66,10 @@ class ApiControllerApi extends JControllerLegacy {
 	
 	public function delete_token(){
 		$user_id = JRequest::getVar("user_id");
-		$token = JRequest::getVar("token");
 		$hw_id = JRequest::getVar("hw_id");
 		
 		$db = JFactory::getDBO();
-		$q = "DELETE FROM #__users_token WHERE user_id = ".(int)$user_id." AND token = '".$token."' AND hw_id = '".$hw_id."'";
+		$q = "DELETE FROM #__users_token WHERE user_id = ".(int)$user_id." AND hw_id = '".$hw_id."'";
 		$db->setQuery($q);
 		if($db->query()){
 			$return["result"] = 1;
