@@ -11,7 +11,28 @@
 defined('_JEXEC') or die;
 
 jimport('joomla.application.component.controllerform');
+
+require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'IPushwoosh.php';
+use Gomoob\Pushwoosh\IPushwoosh;
+require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'ICURLClient.php';
+use Gomoob\Pushwoosh\ICURLClient;
+require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Client'.DIRECTORY_SEPARATOR.'CURLClient.php';
+use Gomoob\Pushwoosh\Client\CURLClient;
+require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Client'.DIRECTORY_SEPARATOR.'Pushwoosh.php';
+use Gomoob\Pushwoosh\Client\Pushwoosh;
+require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Response'.DIRECTORY_SEPARATOR.'AbstractResponse.php';
+use Gomoob\Pushwoosh\Model\Response\AbstractResponse;
+
+require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Request'.DIRECTORY_SEPARATOR.'RegisterDeviceRequest.php';
 use Gomoob\Pushwoosh\Model\Request\RegisterDeviceRequest;
+require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Response'.DIRECTORY_SEPARATOR.'RegisterDeviceResponse.php';
+use Gomoob\Pushwoosh\Model\Response\RegisterDeviceResponse;
+
+require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Request'.DIRECTORY_SEPARATOR.'CreateMessageRequest.php';
+use Gomoob\Pushwoosh\Model\Request\CreateMessageRequest;
+require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Response'.DIRECTORY_SEPARATOR.'CreateMessageResponse.php';
+use Gomoob\Pushwoosh\Model\Response\CreateMessageResponse;
+
 /**
  * Campaign controller class.
  */
@@ -86,14 +107,18 @@ class CampaignControllerCampaign extends JControllerForm
 		$db->setQuery("INSERT INTO #__campaign_push (user_id, token, hw_id, type, campaign_id) VALUES ".implode(",", $device_arr).";");
 		$db->execute();
 		
+		
+		/*$pushwoosh = new Pushwoosh();
 		foreach($devices as $device){
 			// Creates the request instance
 			$request = RegisterDeviceRequest::create()
-				->setDeviceType(DeviceType::iOS())
+				->setApplication('64BD1-55924')
+				->setDeviceType($device->type)
 				->setHwid($device->hw_id)
 				->setLanguage('da')
 				->setPushToken($device->token)
 				->setTimezone(3600);
+			
 			
 			// Call the '/registerDevice' Web Service
 			$response = $pushwoosh->registerDevice($request);
@@ -106,8 +131,29 @@ class CampaignControllerCampaign extends JControllerForm
 				print 'Status code : ' . $response->getStatusCode();
 				print 'Status message : ' . $response->getStatusMessage();
 			}
-		}
-		print_r($devices);exit;
+		}*/
+		
+		
+		$url = 'https://cp.pushwoosh.com/json/1.3/createMessage';
+		$send['request'] = array('application' => '64BD1-55924','auth' => '8PaXOfTn9dzkNuqiMmup9jcmAKDppghCgAgvKqG5u0ArjTBgedOhVxMtzZIT0tibOUFJ3oPilAY1gWbSIt4E','notifications' => array(array('send_date' => 'now',   'content' => 'push notification from website', 'data' => array('custom' => 'json data'),'link' => 'http://pushwoosh.com/')));
+		$request = json_encode($send);
+	 
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate');
+		curl_setopt($ch, CURLOPT_HEADER, true);
+		curl_setopt($ch, CURLOPT_POST, true);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $request);
+	 
+		$response = curl_exec($ch);
+		$info = curl_getinfo($ch);
+		curl_close($ch);
+		
+		
+		
+		
+		exit;
 		
 	}
 
