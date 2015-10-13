@@ -1,0 +1,4 @@
+- add push field #__campaign
+- add #__campaign_push table
+- edit admin/campaign/default
+- edit admin/controllers/campaign

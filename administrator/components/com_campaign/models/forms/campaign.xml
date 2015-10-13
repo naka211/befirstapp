@@ -127,9 +127,9 @@
             close="true"
             option_on="Yes"
             option_off="Yes">
-                <option value="1">Both</option>
-                <option value="2">Female</option>
-                <option value="3">Male</option>
+                <option value="3">Both</option>
+                <option value="1">Female</option>
+                <option value="2">Male</option>
         </field> 
 
        <field name="from_age" type="text" size="40" class="inputbox"

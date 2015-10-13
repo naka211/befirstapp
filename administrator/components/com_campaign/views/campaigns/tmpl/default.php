@@ -143,9 +143,6 @@ if (!empty($this->extra_sidebar))
 				<?php echo JHtml::_('grid.sort',  'COM_CAMPAIGN_CAMPAIGNS_REWARD', 'a.`reward`', $listDirn, $listOrder); ?>
 				</th>
 				<th class='left'>
-				<?php echo JHtml::_('grid.sort',  'COM_CAMPAIGN_CAMPAIGNS_NUMBER_OF_WINNERS', 'a.`number_of_winners`', $listDirn, $listOrder); ?>
-				</th>
-				<th class='left'>
 				<?php echo JHtml::_('grid.sort',  'COM_CAMPAIGN_CAMPAIGNS_PUBLISHED', 'a.`published`', $listDirn, $listOrder); ?>
 				</th>
 
@@ -155,6 +152,12 @@ if (!empty($this->extra_sidebar))
 							<?php echo JHtml::_('grid.sort', 'JGRID_HEADING_ID', 'a.`id`', $listDirn, $listOrder); ?>
 						</th>
 					<?php endif; ?>
+                    <th width="6%" class="nowrap center hidden-phone">
+						
+                    </th>
+                    <th width="6%" class="nowrap center hidden-phone">
+						
+                    </th>
                     <th width="6%" class="nowrap center hidden-phone">
 						
                     </th>
@@ -246,10 +249,6 @@ if (!empty($this->extra_sidebar))
 					<?php echo $item->reward; ?>
 				</td>
 				<td>
-
-					<?php echo $item->number_of_winners; ?>
-				</td>
-				<td>
 					<?php echo JHtml::_('grid.published', $item->published, $i); ?>
 				</td>
 
@@ -260,7 +259,15 @@ if (!empty($this->extra_sidebar))
 							</td>
 						<?php endif; ?>
                 <td>
-					<a href="index.php?option=com_campaign&view=list&campaign_id=<?php echo $item->id;?>">View list</a>
+					<a href="index.php?option=com_campaign&view=list&campaign_id=<?php echo $item->id;?>">Joined list</a>
+				</td>
+                <td>
+                	<?php if($item->push == 0){?>
+					<a href="index.php?option=com_campaign&task=campaign.push_notification&campaign_id=<?php echo $item->id;?>">Push notification</a>
+                    <?php }?>
+				</td>
+                <td>
+					<a href="index.php?option=com_campaign&view=push&campaign_id=<?php echo $item->id;?>">Pushed list</a>
 				</td>
 					</tr>
 				<?php endforeach; ?>

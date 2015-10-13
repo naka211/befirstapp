@@ -53,13 +53,26 @@ class ApiControllerApi extends JControllerLegacy {
 		$hw_id = JRequest::getVar("hw_id");
 		
 		$db = JFactory::getDBO();
-		$db->setQuery("INSERT INTO #__users_token (user_id, token, hw_id, type) VALUES (".$user_id.", '".$token."', '".$hw_id."', '".$type."')");
-		if($db->execute()){
-			$return["result"] = 1;
-			$return["error"] = "";
+		$db->setQuery("SELECT id FROM #__users_token WHERE user_id = ".$user_id." AND hw_id = '".$hw_id."'");
+		$id = $db->loadResult();
+		if($id){
+			$db->setQuery("UPDATE #__users_token SET token = '".$token."' WHERE user_id = ".$user_id." AND hw_id = '".$hw_id."'");
+			if($db->execute()){
+				$return["result"] = 1;
+				$return["error"] = "";
+			} else {
+				$return["result"] = 0;
+				$return["error"] = "Can not insert new token";
+			}
 		} else {
-			$return["result"] = 0;
-			$return["error"] = "Can not insert new token";
+			$db->setQuery("INSERT INTO #__users_token (user_id, token, hw_id, type) VALUES (".$user_id.", '".$token."', '".$hw_id."', '".$type."')");
+			if($db->execute()){
+				$return["result"] = 1;
+				$return["error"] = "";
+			} else {
+				$return["result"] = 0;
+				$return["error"] = "Can not insert new token";
+			}
 		}
 		die(json_encode($return));
 	}
