@@ -2,6 +2,32 @@
 defined('_JEXEC') or die;
 
 jimport('joomla.application.component.controller');
+require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'IPushwoosh.php';
+use Gomoob\Pushwoosh\IPushwoosh;
+require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'ICURLClient.php';
+use Gomoob\Pushwoosh\ICURLClient;
+require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Client'.DIRECTORY_SEPARATOR.'CURLClient.php';
+use Gomoob\Pushwoosh\Client\CURLClient;
+require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Client'.DIRECTORY_SEPARATOR.'Pushwoosh.php';
+use Gomoob\Pushwoosh\Client\Pushwoosh;
+require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Response'.DIRECTORY_SEPARATOR.'AbstractResponse.php';
+use Gomoob\Pushwoosh\Model\Response\AbstractResponse;
+
+require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Request'.DIRECTORY_SEPARATOR.'RegisterDeviceRequest.php';
+use Gomoob\Pushwoosh\Model\Request\RegisterDeviceRequest;
+require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Response'.DIRECTORY_SEPARATOR.'RegisterDeviceResponse.php';
+use Gomoob\Pushwoosh\Model\Response\RegisterDeviceResponse;
+
+require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Request'.DIRECTORY_SEPARATOR.'UnregisterDeviceRequest.php';
+use Gomoob\Pushwoosh\Model\Request\UnregisterDeviceRequest;
+require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Response'.DIRECTORY_SEPARATOR.'UnregisterDeviceResponse.php';
+use Gomoob\Pushwoosh\Model\Response\UnregisterDeviceResponse;
+
+require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Request'.DIRECTORY_SEPARATOR.'SetTagsRequest.php';
+use Gomoob\Pushwoosh\Model\Request\SetTagsRequest;
+require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Response'.DIRECTORY_SEPARATOR.'SetTagsResponse.php';
+use Gomoob\Pushwoosh\Model\Request\SetTagsResponse;
+
 
 class ApiControllerApi extends JControllerLegacy {
 
@@ -74,6 +100,42 @@ class ApiControllerApi extends JControllerLegacy {
 				$return["error"] = "Can not insert new token";
 			}
 		}
+		
+		$pushwoosh = new Pushwoosh();
+		$request = RegisterDeviceRequest::create()
+			->setApplication('64BD1-55924')
+			->setDeviceType($type)
+			->setHwid($hw_id)
+			->setLanguage('da')
+			->setPushToken($token)
+			->setTimezone(3600);
+		// Call the '/registerDevice' Web Service
+		$response = $pushwoosh->registerDevice($request);
+		if($response->isOk()) {
+			$return["api_register_device"] = "OK";
+		} else {
+			$return["api_register_device"] = $response->getStatusMessage();
+		}
+		
+		
+		$userProfile = JUserHelper::getProfile( $user_id );
+		$gender = $userProfile->profile["gender"];
+		$postal_code = $userProfile->profile["postal_code"];
+		$t = explode("-", $userProfile->profile["dob"]);
+		$yob = $t[0];
+		$age = date("Y") - $yob;
+		// Creates the request instance
+		$request1 = SetTagsRequest::create()->setHwid($hw_id)->setTag('gender', $gender)->setTag('age', $age)->setTag('postal_code', $postal_code);
+		$request1->setApplication('64BD1-55924');
+		
+		// Call the '/setTags' Web Service
+		$response1 = $pushwoosh->setTags($request1);
+		if($response1->isOk()) {
+			$return["api_set_tag"] = "OK";
+		} else {
+			$return["api_set_tag"] = $response1->getStatusMessage();
+		}
+		
 		die(json_encode($return));
 	}
 	
@@ -91,6 +153,17 @@ class ApiControllerApi extends JControllerLegacy {
 			$return["result"] = 0;
 			$return["error"] = "Can not delete token";
 		}
+		
+		$pushwoosh = new Pushwoosh();
+		$unregisterDeviceRequest = UnregisterDeviceRequest::create()->setHwid($hw_id);
+		$pushwoosh->setApplication('64BD1-55924');
+		$response = $pushwoosh->unregisterDevice($unregisterDeviceRequest);
+		if($response->isOk()) {
+			$return["api_unregister_device"] = "OK";
+		} else {
+			$return["api_unregister_device"] = $response->getStatusMessage();
+		}
+		
 		die(json_encode($return));
 	}
 	
