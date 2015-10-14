@@ -58,8 +58,12 @@ class CampaignControllerCampaign extends JControllerForm
 		$from_zip = $boudaries->from_zipcode;
 		$to_zip = $boudaries->to_zipcode;
 		
-		$url = 'https://cp.pushwoosh.com/json/1.3/createMessage';
-		$send['request'] = array('application' => '64BD1-55924','auth' => '8PaXOfTn9dzkNuqiMmup9jcmAKDppghCgAgvKqG5u0ArjTBgedOhVxMtzZIT0tibOUFJ3oPilAY1gWbSIt4E','notifications' => array(array('send_date' => 'now',   'content' => 'push notification from website', 'data' => array('custom' => 'json data'),'link' => 'http://pushwoosh.com/')));
+		if($gender != 3){
+			$gender_filter = '* T("gender", EQ, "'.$gender.'")';
+		}
+		
+		$url = 'https://cp.pushwoosh.com/json/1.3/createTargetedMessage';
+		$send['request'] = array('auth' => '8PaXOfTn9dzkNuqiMmup9jcmAKDppghCgAgvKqG5u0ArjTBgedOhVxMtzZIT0tibOUFJ3oPilAY1gWbSIt4E', 'send_date'=>'now', 'content'=>'Test push from website', 'device_filter'=>'A("64BD1-55924", ["Android"]) * T("age", BETWEEN, ['.$from_age.', '.$to_age.']) * T("postal_code", BETWEEN, ['.$from_zip.', '.$to_zip.']) '.$gender_filter);
 		$request = json_encode($send);
 	 
 		$ch = curl_init($url);
@@ -73,7 +77,9 @@ class CampaignControllerCampaign extends JControllerForm
 		$response = curl_exec($ch);
 		$info = curl_getinfo($ch);
 		curl_close($ch);
-		
+		print "[PW] request: $request\n";
+        print "[PW] response: $response\n";
+        print "[PW] info: " . print_r($info, true);
 		exit;
 		
 	}

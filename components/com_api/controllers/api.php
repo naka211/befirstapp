@@ -28,6 +28,13 @@ use Gomoob\Pushwoosh\Model\Request\SetTagsRequest;
 require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Response'.DIRECTORY_SEPARATOR.'SetTagsResponse.php';
 use Gomoob\Pushwoosh\Model\Request\SetTagsResponse;
 
+require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Request'.DIRECTORY_SEPARATOR.'GetTagsRequest.php';
+use Gomoob\Pushwoosh\Model\Request\GetTagsRequest;
+require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Response'.DIRECTORY_SEPARATOR.'GetTagsResponse.php';
+use Gomoob\Pushwoosh\Model\Request\GetTagsResponse;
+require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Response'.DIRECTORY_SEPARATOR.'GetTagsResponseResponse.php';
+use Gomoob\Pushwoosh\Model\Request\GetTagsResponseResponse;
+
 
 class ApiControllerApi extends JControllerLegacy {
 
@@ -602,5 +609,24 @@ class ApiControllerApi extends JControllerLegacy {
 			$return["error"] = "Not result";
 		}
 		die(json_encode($return));
+	}
+	
+	function getTags(){
+		$pushwoosh = new Pushwoosh();
+		$getTagsRequest = GetTagsRequest::create()->setHwid('dbea16fa9b7bb63d');
+		$getTagsRequest->setApplication('64BD1-55924');
+        $getTagsRequest->setAuth('8PaXOfTn9dzkNuqiMmup9jcmAKDppghCgAgvKqG5u0ArjTBgedOhVxMtzZIT0tibOUFJ3oPilAY1gWbSIt4E');
+		
+		$getTagsResponse = $pushwoosh->getTags($getTagsRequest);
+		
+		if($getTagsResponse->isOk()) {
+			$getTagsResponseResponse = $getTagsResponse->getResponse();
+			$result = $getTagsResponseResponse->getResult();
+			print_r($result);exit;
+		} else {
+			print 'Oups, the operation failed :-('; 
+			print 'Status code : ' . $getTagsResponse->getStatusCode();
+			print 'Status message : ' . $getTagsResponse->getStatusMessage();
+		}
 	}
 }
