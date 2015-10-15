@@ -12,27 +12,6 @@ defined('_JEXEC') or die;
 
 jimport('joomla.application.component.controllerform');
 
-require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'IPushwoosh.php';
-use Gomoob\Pushwoosh\IPushwoosh;
-require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'ICURLClient.php';
-use Gomoob\Pushwoosh\ICURLClient;
-require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Client'.DIRECTORY_SEPARATOR.'CURLClient.php';
-use Gomoob\Pushwoosh\Client\CURLClient;
-require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Client'.DIRECTORY_SEPARATOR.'Pushwoosh.php';
-use Gomoob\Pushwoosh\Client\Pushwoosh;
-require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Response'.DIRECTORY_SEPARATOR.'AbstractResponse.php';
-use Gomoob\Pushwoosh\Model\Response\AbstractResponse;
-
-require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Request'.DIRECTORY_SEPARATOR.'UnregisterDeviceRequest.php';
-use Gomoob\Pushwoosh\Model\Request\UnregisterDeviceRequest;
-require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Response'.DIRECTORY_SEPARATOR.'UnregisterDeviceResponse.php';
-use Gomoob\Pushwoosh\Model\Response\UnregisterDeviceResponse;
-
-require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Request'.DIRECTORY_SEPARATOR.'CreateMessageRequest.php';
-use Gomoob\Pushwoosh\Model\Request\CreateMessageRequest;
-require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Response'.DIRECTORY_SEPARATOR.'CreateMessageResponse.php';
-use Gomoob\Pushwoosh\Model\Response\CreateMessageResponse;
-
 /**
  * Campaign controller class.
  */
@@ -59,11 +38,11 @@ class CampaignControllerCampaign extends JControllerForm
 		$to_zip = $boudaries->to_zipcode;
 		
 		if($gender != 3){
-			$gender_filter = '* T("gender", EQ, "'.$gender.'")';
+			$gender_filter = '* T("gender", EQ, '.$gender.')';
 		}
 		
 		$url = 'https://cp.pushwoosh.com/json/1.3/createTargetedMessage';
-		$send['request'] = array('auth' => '8PaXOfTn9dzkNuqiMmup9jcmAKDppghCgAgvKqG5u0ArjTBgedOhVxMtzZIT0tibOUFJ3oPilAY1gWbSIt4E', 'send_date'=>'now', 'content'=>'Test push from website', 'device_filter'=>'A("64BD1-55924", ["Android"]) * T("age", BETWEEN, ['.$from_age.', '.$to_age.']) * T("postal_code", BETWEEN, ['.$from_zip.', '.$to_zip.']) '.$gender_filter);
+		$send['request'] = array('auth' => '8PaXOfTn9dzkNuqiMmup9jcmAKDppghCgAgvKqG5u0ArjTBgedOhVxMtzZIT0tibOUFJ3oPilAY1gWbSIt4E', 'send_date'=>'now', 'content'=>'Test push from website', 'devices_filter'=>'A("64BD1-55924", ["Android"]) * T("age", BETWEEN, ['.$from_age.', '.$to_age.']) * T("postal_code", BETWEEN, ['.$from_zip.', '.$to_zip.']) '.$gender_filter);
 		$request = json_encode($send);
 	 
 		$ch = curl_init($url);
@@ -81,6 +60,10 @@ class CampaignControllerCampaign extends JControllerForm
         print "[PW] response: $response\n";
         print "[PW] info: " . print_r($info, true);
 		exit;
+		$db->setQuery("UPDATE #__campaign SET push = 1 WHERE id = ".$campaign_id);
+		$db->execute();
+		
+		$this->setRedirect(JRoute::_('index.php?option=com_campaign&view=campaigns'), "Push successfully");
 		
 	}
 

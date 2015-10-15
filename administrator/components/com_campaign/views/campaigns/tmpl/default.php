@@ -158,9 +158,6 @@ if (!empty($this->extra_sidebar))
                     <th width="6%" class="nowrap center hidden-phone">
 						
                     </th>
-                    <th width="6%" class="nowrap center hidden-phone">
-						
-                    </th>
 				</tr>
 				</thead>
 				<tfoot>
@@ -265,9 +262,6 @@ if (!empty($this->extra_sidebar))
                 	<?php if($item->push == 0){?>
 					<a href="index.php?option=com_campaign&task=campaign.push_notification&campaign_id=<?php echo $item->id;?>">Push notification</a>
                     <?php }?>
-				</td>
-                <td>
-					<a href="index.php?option=com_campaign&view=push&campaign_id=<?php echo $item->id;?>">Pushed list</a>
 				</td>
 					</tr>
 				<?php endforeach; ?>

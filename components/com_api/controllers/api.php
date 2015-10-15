@@ -2,39 +2,6 @@
 defined('_JEXEC') or die;
 
 jimport('joomla.application.component.controller');
-require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'IPushwoosh.php';
-use Gomoob\Pushwoosh\IPushwoosh;
-require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'ICURLClient.php';
-use Gomoob\Pushwoosh\ICURLClient;
-require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Client'.DIRECTORY_SEPARATOR.'CURLClient.php';
-use Gomoob\Pushwoosh\Client\CURLClient;
-require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Client'.DIRECTORY_SEPARATOR.'Pushwoosh.php';
-use Gomoob\Pushwoosh\Client\Pushwoosh;
-require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Response'.DIRECTORY_SEPARATOR.'AbstractResponse.php';
-use Gomoob\Pushwoosh\Model\Response\AbstractResponse;
-
-require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Request'.DIRECTORY_SEPARATOR.'RegisterDeviceRequest.php';
-use Gomoob\Pushwoosh\Model\Request\RegisterDeviceRequest;
-require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Response'.DIRECTORY_SEPARATOR.'RegisterDeviceResponse.php';
-use Gomoob\Pushwoosh\Model\Response\RegisterDeviceResponse;
-
-require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Request'.DIRECTORY_SEPARATOR.'UnregisterDeviceRequest.php';
-use Gomoob\Pushwoosh\Model\Request\UnregisterDeviceRequest;
-require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Response'.DIRECTORY_SEPARATOR.'UnregisterDeviceResponse.php';
-use Gomoob\Pushwoosh\Model\Response\UnregisterDeviceResponse;
-
-require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Request'.DIRECTORY_SEPARATOR.'SetTagsRequest.php';
-use Gomoob\Pushwoosh\Model\Request\SetTagsRequest;
-require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Response'.DIRECTORY_SEPARATOR.'SetTagsResponse.php';
-use Gomoob\Pushwoosh\Model\Request\SetTagsResponse;
-
-require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Request'.DIRECTORY_SEPARATOR.'GetTagsRequest.php';
-use Gomoob\Pushwoosh\Model\Request\GetTagsRequest;
-require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Response'.DIRECTORY_SEPARATOR.'GetTagsResponse.php';
-use Gomoob\Pushwoosh\Model\Request\GetTagsResponse;
-require_once 'Gomoob'.DIRECTORY_SEPARATOR.'Pushwoosh'.DIRECTORY_SEPARATOR.'Model'.DIRECTORY_SEPARATOR.'Response'.DIRECTORY_SEPARATOR.'GetTagsResponseResponse.php';
-use Gomoob\Pushwoosh\Model\Request\GetTagsResponseResponse;
-
 
 class ApiControllerApi extends JControllerLegacy {
 
@@ -108,40 +75,48 @@ class ApiControllerApi extends JControllerLegacy {
 			}
 		}
 		
-		$pushwoosh = new Pushwoosh();
-		$request = RegisterDeviceRequest::create()
-			->setApplication('64BD1-55924')
-			->setDeviceType($type)
-			->setHwid($hw_id)
-			->setLanguage('da')
-			->setPushToken($token)
-			->setTimezone(3600);
-		// Call the '/registerDevice' Web Service
-		$response = $pushwoosh->registerDevice($request);
-		if($response->isOk()) {
-			$return["api_register_device"] = "OK";
-		} else {
-			$return["api_register_device"] = $response->getStatusMessage();
-		}
+		//register device
+		$url = 'https://cp.pushwoosh.com/json/1.3/registerDevice';
+		$send['request'] = array('application' => '64BD1-55924', 'push_token'=>$token, 'language'=>'da', 'hwid'=>$hw_id, 'timezone'=>3600, 'device_type'=>$type);
+		$request = json_encode($send);
+	 
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate');
+		curl_setopt($ch, CURLOPT_HEADER, true);
+		curl_setopt($ch, CURLOPT_POST, true);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $request);
+	 
+		$response = curl_exec($ch);
+		$info = curl_getinfo($ch);
+		curl_close($ch);
+		$return["api_register_device"] = $response;
 		
-		
+		//set tags
 		$userProfile = JUserHelper::getProfile( $user_id );
 		$gender = $userProfile->profile["gender"];
 		$postal_code = $userProfile->profile["postal_code"];
 		$t = explode("-", $userProfile->profile["dob"]);
 		$yob = $t[0];
 		$age = date("Y") - $yob;
-		// Creates the request instance
-		$request1 = SetTagsRequest::create()->setHwid($hw_id)->setTag('gender', $gender)->setTag('age', $age)->setTag('postal_code', $postal_code);
-		$request1->setApplication('64BD1-55924');
 		
-		// Call the '/setTags' Web Service
-		$response1 = $pushwoosh->setTags($request1);
-		if($response1->isOk()) {
-			$return["api_set_tag"] = "OK";
-		} else {
-			$return["api_set_tag"] = $response1->getStatusMessage();
-		}
+		$url = 'https://cp.pushwoosh.com/json/1.3/setTags';
+		$send['request'] = array('application' => '64BD1-55924', 'hwid'=>$hw_id, 'tags'=>array('gender'=>(int)$gender, 'age'=>$age, 'postal_code'=>(int)$postal_code));
+		$request = json_encode($send);
+	 
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate');
+		curl_setopt($ch, CURLOPT_HEADER, true);
+		curl_setopt($ch, CURLOPT_POST, true);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $request);
+	 
+		$response = curl_exec($ch);
+		$info = curl_getinfo($ch);
+		curl_close($ch);
+		$return["api_set_tag"] = $response;
 		
 		die(json_encode($return));
 	}
@@ -161,15 +136,23 @@ class ApiControllerApi extends JControllerLegacy {
 			$return["error"] = "Can not delete token";
 		}
 		
-		$pushwoosh = new Pushwoosh();
-		$unregisterDeviceRequest = UnregisterDeviceRequest::create()->setHwid($hw_id);
-		$pushwoosh->setApplication('64BD1-55924');
-		$response = $pushwoosh->unregisterDevice($unregisterDeviceRequest);
-		if($response->isOk()) {
-			$return["api_unregister_device"] = "OK";
-		} else {
-			$return["api_unregister_device"] = $response->getStatusMessage();
-		}
+		//unregister device
+		$url = 'https://cp.pushwoosh.com/json/1.3/unregisterDevice';
+		$send['request'] = array('application' => '64BD1-55924', 'hwid'=>$hw_id);
+		$request = json_encode($send);
+	 
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate');
+		curl_setopt($ch, CURLOPT_HEADER, true);
+		curl_setopt($ch, CURLOPT_POST, true);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $request);
+	 
+		$response = curl_exec($ch);
+		$info = curl_getinfo($ch);
+		curl_close($ch);
+		$return["api_unregister_device"] = $response;
 		
 		die(json_encode($return));
 	}
@@ -612,21 +595,22 @@ class ApiControllerApi extends JControllerLegacy {
 	}
 	
 	function getTags(){
-		$pushwoosh = new Pushwoosh();
-		$getTagsRequest = GetTagsRequest::create()->setHwid('dbea16fa9b7bb63d');
-		$getTagsRequest->setApplication('64BD1-55924');
-        $getTagsRequest->setAuth('8PaXOfTn9dzkNuqiMmup9jcmAKDppghCgAgvKqG5u0ArjTBgedOhVxMtzZIT0tibOUFJ3oPilAY1gWbSIt4E');
-		
-		$getTagsResponse = $pushwoosh->getTags($getTagsRequest);
-		
-		if($getTagsResponse->isOk()) {
-			$getTagsResponseResponse = $getTagsResponse->getResponse();
-			$result = $getTagsResponseResponse->getResult();
-			print_r($result);exit;
-		} else {
-			print 'Oups, the operation failed :-('; 
-			print 'Status code : ' . $getTagsResponse->getStatusCode();
-			print 'Status message : ' . $getTagsResponse->getStatusMessage();
-		}
+		$hw_id = JRequest::getVar('hw_id');
+		$url = 'https://cp.pushwoosh.com/json/1.3/getTags';
+		$send['request'] = array('auth'=>'8PaXOfTn9dzkNuqiMmup9jcmAKDppghCgAgvKqG5u0ArjTBgedOhVxMtzZIT0tibOUFJ3oPilAY1gWbSIt4E','application' => '64BD1-55924', 'hwid'=>$hw_id);
+		$request = json_encode($send);
+	 
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate');
+		curl_setopt($ch, CURLOPT_HEADER, true);
+		curl_setopt($ch, CURLOPT_POST, true);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $request);
+	 
+		$response = curl_exec($ch);
+		$info = curl_getinfo($ch);
+		curl_close($ch);
+		print_r($response);exit;
 	}
 }

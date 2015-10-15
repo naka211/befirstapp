@@ -1,4 +1,3 @@
 - add push field #__campaign
 - edit admin/campaign/default
 - edit admin/controllers/campaign
-- add Gomoob folder to root and admin folder
