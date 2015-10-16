@@ -329,9 +329,9 @@ class ApiControllerApi extends JControllerLegacy {
 		$campaign_ids = $db->loadColumn();
 		if($campaign_ids){
 			$campaign_str = implode(",", $campaign_ids);
-			$q = "SELECT * FROM #__campaign WHERE id NOT IN (".$campaign_str.") ORDER BY id DESC";
+			$q = "SELECT * FROM #__campaign WHERE id NOT IN (".$campaign_str.") AND published = 1 ORDER BY id DESC";
 		} else {
-			$q = "SELECT * FROM #__campaign ORDER BY id DESC";
+			$q = "SELECT * FROM #__campaign WHERE published = 1 ORDER BY id DESC";
 		}
 		
 		$db->setQuery($q);

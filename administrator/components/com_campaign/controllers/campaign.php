@@ -42,7 +42,7 @@ class CampaignControllerCampaign extends JControllerForm
 		}
 		
 		$url = 'https://cp.pushwoosh.com/json/1.3/createTargetedMessage';
-		$send['request'] = array('auth' => '8PaXOfTn9dzkNuqiMmup9jcmAKDppghCgAgvKqG5u0ArjTBgedOhVxMtzZIT0tibOUFJ3oPilAY1gWbSIt4E', 'send_date'=>'now', 'content'=>'You have new campaign', 'devices_filter'=>'A("64BD1-55924", ["Android"]) * T("age", BETWEEN, ['.$from_age.', '.$to_age.']) * T("postal_code", BETWEEN, ['.$from_zip.', '.$to_zip.']) '.$gender_filter);
+		$send['request'] = array('auth' => '8PaXOfTn9dzkNuqiMmup9jcmAKDppghCgAgvKqG5u0ArjTBgedOhVxMtzZIT0tibOUFJ3oPilAY1gWbSIt4E', 'send_date'=>'now', 'content'=>'You have new campaign', 'devices_filter'=>'A("64BD1-55924") * T("age", BETWEEN, ['.$from_age.', '.$to_age.']) * T("postal_code", BETWEEN, ['.$from_zip.', '.$to_zip.']) '.$gender_filter);
 		$request = json_encode($send);
 	 
 		$ch = curl_init($url);
@@ -59,7 +59,7 @@ class CampaignControllerCampaign extends JControllerForm
 		print "[PW] request: $request\n";
         print "[PW] response: $response\n";
         print "[PW] info: " . print_r($info, true);
-		exit;
+		
 		$db->setQuery("UPDATE #__campaign SET push = 1 WHERE id = ".$campaign_id);
 		$db->execute();
 		
