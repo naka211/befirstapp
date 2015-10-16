@@ -28,7 +28,7 @@ class CampaignControllerCampaign extends JControllerForm
 		$campaign_id = JRequest::getVar("campaign_id");
 		
 		$db = JFactory::getDBO();
-		$db->setQuery("SELECT gender, from_age, to_age, from_zipcode, to_zipcode FROM #__campaign WHERE id = ".$campaign_id);
+		$db->setQuery("SELECT name, gender, from_age, to_age, from_zipcode, to_zipcode FROM #__campaign WHERE id = ".$campaign_id);
 		$boudaries = $db->loadObject();
 		
 		$gender = $boudaries->gender;
@@ -37,12 +37,21 @@ class CampaignControllerCampaign extends JControllerForm
 		$from_zip = $boudaries->from_zipcode;
 		$to_zip = $boudaries->to_zipcode;
 		
+		$filter = "";
 		if($gender != 3){
-			$gender_filter = '* T("gender", EQ, '.$gender.')';
+			$filter .= '* T("gender", EQ, '.$gender.') ';
+		}
+		
+		if($from_age != 0 && $to_age != 0){
+			$filter .= '* T("age", BETWEEN, ['.$from_age.', '.$to_age.']) ';
+		}
+		
+		if($from_zip != "" || $to_zip != ""){
+			$filter .= '* T("postal_code", BETWEEN, ['.$from_zip.', '.$to_zip.']) ';
 		}
 		
 		$url = 'https://cp.pushwoosh.com/json/1.3/createTargetedMessage';
-		$send['request'] = array('auth' => '8PaXOfTn9dzkNuqiMmup9jcmAKDppghCgAgvKqG5u0ArjTBgedOhVxMtzZIT0tibOUFJ3oPilAY1gWbSIt4E', 'send_date'=>'now', 'content'=>'You have new campaign', 'devices_filter'=>'A("64BD1-55924", ["Android"]) * T("age", BETWEEN, ['.$from_age.', '.$to_age.']) * T("postal_code", BETWEEN, ['.$from_zip.', '.$to_zip.']) '.$gender_filter);
+		$send['request'] = array('auth' => '8PaXOfTn9dzkNuqiMmup9jcmAKDppghCgAgvKqG5u0ArjTBgedOhVxMtzZIT0tibOUFJ3oPilAY1gWbSIt4E', 'send_date'=>'now', 'content'=>'You have new campaign: '.$boudaries->name, 'devices_filter'=>'A("64BD1-55924") '.$filter);
 		$request = json_encode($send);
 	 
 		$ch = curl_init($url);
@@ -59,7 +68,7 @@ class CampaignControllerCampaign extends JControllerForm
 		print "[PW] request: $request\n";
         print "[PW] response: $response\n";
         print "[PW] info: " . print_r($info, true);
-		exit;
+		
 		$db->setQuery("UPDATE #__campaign SET push = 1 WHERE id = ".$campaign_id);
 		$db->execute();
 		

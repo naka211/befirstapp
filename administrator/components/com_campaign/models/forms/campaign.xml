@@ -132,7 +132,7 @@
                 <option value="2">Male</option>
         </field> 
 
-       <field name="from_age" type="text" size="40" class="inputbox"
+       <field name="from_age" type="text" default="0" size="40" class="inputbox"
                                                     
             label="COM_CAMPAIGN_FORM_LBL_CAMPAIGN_FROM_AGE"
             description="COM_CAMPAIGN_FORM_DESC_CAMPAIGN_FROM_AGE" 
@@ -141,7 +141,7 @@
                                                     
                                                     filter="safehtml" /> 
 
-       <field name="to_age" type="text" size="40" class="inputbox"
+       <field name="to_age" type="text" default="200" size="40" class="inputbox"
                                                     
             label="COM_CAMPAIGN_FORM_LBL_CAMPAIGN_TO_AGE"
             description="COM_CAMPAIGN_FORM_DESC_CAMPAIGN_TO_AGE" 
