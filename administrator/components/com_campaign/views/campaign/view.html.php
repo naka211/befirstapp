@@ -58,16 +58,16 @@ class CampaignViewCampaign extends JViewLegacy {
         // If not checked out, can save the item.
         if (!$checkedOut && ($canDo->get('core.edit') || ($canDo->get('core.create')))) {
 
-            JToolBarHelper::apply('campaign.apply', 'JTOOLBAR_APPLY');
+            //JToolBarHelper::apply('campaign.apply', 'JTOOLBAR_APPLY');
             JToolBarHelper::save('campaign.save', 'JTOOLBAR_SAVE');
         }
-        if (!$checkedOut && ($canDo->get('core.create'))) {
+        /*if (!$checkedOut && ($canDo->get('core.create'))) {
             JToolBarHelper::custom('campaign.save2new', 'save-new.png', 'save-new_f2.png', 'JTOOLBAR_SAVE_AND_NEW', false);
         }
-        // If an existing item, can save to a copy.
-        if (!$isNew && $canDo->get('core.create')) {
+*/        // If an existing item, can save to a copy.
+        /*if (!$isNew && $canDo->get('core.create')) {
             JToolBarHelper::custom('campaign.save2copy', 'save-copy.png', 'save-copy_f2.png', 'JTOOLBAR_SAVE_AS_COPY', false);
-        }
+        }*/
         if (empty($this->item->id)) {
             JToolBarHelper::cancel('campaign.cancel', 'JTOOLBAR_CANCEL');
         } else {
