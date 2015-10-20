@@ -52,6 +52,7 @@ class CampaignControllerCampaign extends JControllerForm
 		
 		$url = 'https://cp.pushwoosh.com/json/1.3/createTargetedMessage';
 		$send['request'] = array('auth' => '8PaXOfTn9dzkNuqiMmup9jcmAKDppghCgAgvKqG5u0ArjTBgedOhVxMtzZIT0tibOUFJ3oPilAY1gWbSIt4E', 'send_date'=>'now', 'content'=>'You have new campaign: '.$boudaries->name, 'devices_filter'=>'A("64BD1-55924") '.$filter);
+
 		$request = json_encode($send);
 	 
 		$ch = curl_init($url);
