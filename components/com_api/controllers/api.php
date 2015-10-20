@@ -331,30 +331,49 @@ class ApiControllerApi extends JControllerLegacy {
 			$campaign_str = implode(",", $campaign_ids);
 			$q = "SELECT * FROM #__campaign WHERE id NOT IN (".$campaign_str.") AND published = 1 ORDER BY id DESC";
 		} else {
-			$q = "SELECT * FROM #__campaign WHERE published = 1 ORDER BY id DESC";
+			$q = "SELECT * FROM #__campaign ORDER BY id DESC";
 		}
 		
 		$db->setQuery($q);
 		$campaigns = $db->loadAssocList();
 		if($campaigns){
-			$i = 0;
+			$userProfile = JUserHelper::getProfile( $user_id );
+			$gender = $userProfile->profile["gender"];
+			$postal_code = $userProfile->profile["postal_code"];
+			$t = explode("-", $userProfile->profile["dob"]);
+			$yob = $t[0];
+			$age = date("Y") - $yob;
+			
+			$tmp = array();
 			foreach($campaigns as $campaign){
-				$campaigns[$i]['campaign_image'] = JURI::base().$campaign['campaign_image'];
-				if($campaigns[$i]['image'] != ""){
-					$campaigns[$i]['image'] = JURI::base().$campaign['image'];
+				if(empty($campaign['from_zipcode']) || empty($campaign['to_zipcode'])){
+					if(($campaign['gender'] == 3 || $campaign['gender'] == $gender) && ($campaign['from_age'] <= $age && $campaign['to_age'] >= $age)){
+						$campaign['campaign_image'] = JURI::base().$campaign['campaign_image'];
+						if($campaign['image'] != ""){
+							$campaign['image'] = JURI::base().$campaign['image'];
+						}
+						array_push($tmp, $campaign);
+					}
+				} else {
+					if(($campaign['gender'] == 3 || $campaign['gender'] == $gender) && ($campaign['from_age'] <= $age && $campaign['to_age'] >= $age) && ($campaign['from_zipcode'] <= $postal_code && $campaign['to_zipcode'] >= $postal_code)){
+						$campaign['campaign_image'] = JURI::base().$campaign['campaign_image'];
+						if($campaign['image'] != ""){
+							$campaign['image'] = JURI::base().$campaign['image'];
+						}
+						array_push($tmp, $campaign);
+					}
 				}
-				$i++;
 			}
+			
 			$return["result"] = 1;
-			$return["data"] = $campaigns;
+			$return["data"] = $tmp;
 			$return["error"] = "";
-			die(json_encode($return));
 		} else {
 			$return["result"] = 0;
 			$return["data"] = NULL;
-			$return["error"] = "Not results";
-			die(json_encode($return));
+			$return["error"] = "Not results";	
 		}
+		die(json_encode($return));
 	}
 	
 	public function get_read_campaigns(){
@@ -508,7 +527,18 @@ class ApiControllerApi extends JControllerLegacy {
 		$db->setQuery($q);
 		$my_rank = $db->loadResult();
 		
-		$q = "SELECT COUNT(id) as user_total FROM #__campaign_users WHERE campaign_id = ".$campaign_id;
+		$q = "SELECT cu.user_id, cu.rank, u.name, cu.win, u.facebook_id FROM #__campaign_users cu INNER JOIN #__users u ON cu.user_id = u.id WHERE cu.campaign_id = ".$campaign_id." AND cu.rank <= $my_rank AND viewed = 1 ORDER BY cu.rank DESC LIMIT 6";
+		$db->setQuery($q);
+		$above_near = $db->loadAssocList();
+		$above_near = array_reverse($above_near);
+		
+		$q = "SELECT cu.user_id, cu.rank, u.name, cu.win, u.facebook_id FROM #__campaign_users cu INNER JOIN #__users u ON cu.user_id = u.id WHERE cu.campaign_id = ".$campaign_id." AND cu.rank > $my_rank AND viewed = 1 ORDER BY cu.rank ASC LIMIT 5";
+		$db->setQuery($q);
+		$under_near = $db->loadAssocList();
+		
+		$near = array_merge($above_near, $under_near);
+		
+		/*$q = "SELECT COUNT(id) as user_total FROM #__campaign_users WHERE campaign_id = ".$campaign_id;
 		$db->setQuery($q);
 		$user_total = $db->loadResult();
 		
@@ -533,7 +563,7 @@ class ApiControllerApi extends JControllerLegacy {
 		
 		if(($my_rank == 2) && ($user_total == 3)){
 			$near = $this->_get_near($campaign_id, 1, 3);
-		}
+		}*/
 		return $near;
 	}
 	

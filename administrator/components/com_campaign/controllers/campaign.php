@@ -23,9 +23,10 @@ class CampaignControllerCampaign extends JControllerForm
         parent::__construct();
     }
 	
-	function push_notification(){
-		
-		$campaign_id = JRequest::getVar("campaign_id");
+	public function postSaveHook($model, $validData)
+	{
+		$item = $model->getItem();
+		$campaign_id = $item->get('id');
 		
 		$db = JFactory::getDBO();
 		$db->setQuery("SELECT name, gender, from_age, to_age, from_zipcode, to_zipcode FROM #__campaign WHERE id = ".$campaign_id);
@@ -72,9 +73,5 @@ class CampaignControllerCampaign extends JControllerForm
 		
 		$db->setQuery("UPDATE #__campaign SET push = 1 WHERE id = ".$campaign_id);
 		$db->execute();
-		
-		$this->setRedirect(JRoute::_('index.php?option=com_campaign&view=campaigns'), "Push successfully");
-		
 	}
-
 }
