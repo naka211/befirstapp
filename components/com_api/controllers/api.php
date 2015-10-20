@@ -508,7 +508,18 @@ class ApiControllerApi extends JControllerLegacy {
 		$db->setQuery($q);
 		$my_rank = $db->loadResult();
 		
-		$q = "SELECT COUNT(id) as user_total FROM #__campaign_users WHERE campaign_id = ".$campaign_id;
+		$q = "SELECT cu.user_id, cu.rank, u.name, cu.win, u.facebook_id FROM #__campaign_users cu INNER JOIN #__users u ON cu.user_id = u.id WHERE cu.campaign_id = ".$campaign_id." AND cu.rank <= $my_rank AND viewed = 1 ORDER BY cu.rank DESC LIMIT 6";
+		$db->setQuery($q);
+		$above_near = $db->loadAssocList();
+		$above_near = array_reverse($above_near);
+		
+		$q = "SELECT cu.user_id, cu.rank, u.name, cu.win, u.facebook_id FROM #__campaign_users cu INNER JOIN #__users u ON cu.user_id = u.id WHERE cu.campaign_id = ".$campaign_id." AND cu.rank > $my_rank AND viewed = 1 ORDER BY cu.rank ASC LIMIT 5";
+		$db->setQuery($q);
+		$under_near = $db->loadAssocList();
+		
+		$near = array_merge($above_near, $under_near);
+		
+		/*$q = "SELECT COUNT(id) as user_total FROM #__campaign_users WHERE campaign_id = ".$campaign_id;
 		$db->setQuery($q);
 		$user_total = $db->loadResult();
 		
@@ -533,7 +544,7 @@ class ApiControllerApi extends JControllerLegacy {
 		
 		if(($my_rank == 2) && ($user_total == 3)){
 			$near = $this->_get_near($campaign_id, 1, 3);
-		}
+		}*/
 		return $near;
 	}
 	
