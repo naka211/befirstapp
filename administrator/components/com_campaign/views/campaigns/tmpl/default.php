@@ -155,9 +155,9 @@ if (!empty($this->extra_sidebar))
                     <th width="6%" class="nowrap center hidden-phone">
 						
                     </th>
-                    <th width="6%" class="nowrap center hidden-phone">
+                    <!--<th width="6%" class="nowrap center hidden-phone">
 						
-                    </th>
+                    </th>-->
 				</tr>
 				</thead>
 				<tfoot>
@@ -258,11 +258,11 @@ if (!empty($this->extra_sidebar))
                 <td>
 					<a href="index.php?option=com_campaign&view=list&campaign_id=<?php echo $item->id;?>">Joined list</a>
 				</td>
-                <td>
+                <!--<td>
                 	<?php if($item->push == 0){?>
 					<a href="index.php?option=com_campaign&task=campaign.push_notification&campaign_id=<?php echo $item->id;?>">Push notification</a>
                     <?php }?>
-				</td>
+				</td>-->
 					</tr>
 				<?php endforeach; ?>
 				</tbody>

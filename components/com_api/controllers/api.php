@@ -331,30 +331,49 @@ class ApiControllerApi extends JControllerLegacy {
 			$campaign_str = implode(",", $campaign_ids);
 			$q = "SELECT * FROM #__campaign WHERE id NOT IN (".$campaign_str.") AND published = 1 ORDER BY id DESC";
 		} else {
-			$q = "SELECT * FROM #__campaign WHERE published = 1 ORDER BY id DESC";
+			$q = "SELECT * FROM #__campaign ORDER BY id DESC";
 		}
 		
 		$db->setQuery($q);
 		$campaigns = $db->loadAssocList();
 		if($campaigns){
-			$i = 0;
+			$userProfile = JUserHelper::getProfile( $user_id );
+			$gender = $userProfile->profile["gender"];
+			$postal_code = $userProfile->profile["postal_code"];
+			$t = explode("-", $userProfile->profile["dob"]);
+			$yob = $t[0];
+			$age = date("Y") - $yob;
+			
+			$tmp = array();
 			foreach($campaigns as $campaign){
-				$campaigns[$i]['campaign_image'] = JURI::base().$campaign['campaign_image'];
-				if($campaigns[$i]['image'] != ""){
-					$campaigns[$i]['image'] = JURI::base().$campaign['image'];
+				if(empty($campaign['from_zipcode']) || empty($campaign['to_zipcode'])){
+					if(($campaign['gender'] == 3 || $campaign['gender'] == $gender) && ($campaign['from_age'] <= $age && $campaign['to_age'] >= $age)){
+						$campaign['campaign_image'] = JURI::base().$campaign['campaign_image'];
+						if($campaign['image'] != ""){
+							$campaign['image'] = JURI::base().$campaign['image'];
+						}
+						array_push($tmp, $campaign);
+					}
+				} else {
+					if(($campaign['gender'] == 3 || $campaign['gender'] == $gender) && ($campaign['from_age'] <= $age && $campaign['to_age'] >= $age) && ($campaign['from_zipcode'] <= $postal_code && $campaign['to_zipcode'] >= $postal_code)){
+						$campaign['campaign_image'] = JURI::base().$campaign['campaign_image'];
+						if($campaign['image'] != ""){
+							$campaign['image'] = JURI::base().$campaign['image'];
+						}
+						array_push($tmp, $campaign);
+					}
 				}
-				$i++;
 			}
+			
 			$return["result"] = 1;
-			$return["data"] = $campaigns;
+			$return["data"] = $tmp;
 			$return["error"] = "";
-			die(json_encode($return));
 		} else {
 			$return["result"] = 0;
 			$return["data"] = NULL;
-			$return["error"] = "Not results";
-			die(json_encode($return));
+			$return["error"] = "Not results";	
 		}
+		die(json_encode($return));
 	}
 	
 	public function get_read_campaigns(){
